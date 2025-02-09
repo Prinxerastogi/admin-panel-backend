@@ -1,0 +1,102 @@
+{
+    "database": "mongodb+srv://akbadmin:akbadmin@cluster0.7n1su.mongodb.net/akbdatabase?retryWrites=true&w=majority",
+    "port": 13004,
+    "tokenValidity": {
+        "day": "1h"
+    },
+    "secret": "&^&54375#@###",
+    "upload": {
+        "categoryImagePath": "/home/saurabh/Desktop/APIS/developmentImage/cat/",
+        "blogImagePath": "/home/saurabh/Desktop/APIS/developmentImage/blog/",
+        "productImagePath": "/home/saurabh/Desktop/APIS/developmentImage/product/",
+        "brandImagePath": "/home/saurabh/Desktop/APIS/developmentImage/brand/",
+        "cityImagePath": "/home/saurabh/Desktop/APIS/developmentImage/city/",
+        "notifiactionImagePath": "/home/saurabh/Desktop/APIS/developmentImage/notification/",
+        "memberShipImagePath": "/home/saurabh/Desktop/APIS/developmentImage/memberShip/",
+        "apkFilePath": "/home/saurabh/Desktop/APIS/developmentImage/apk/",
+        "banner": "/home/saurabh/Desktop/APIS/developmentImage/banner",
+        "infoImagePath": "/home/saurabh/Desktop/APIS/developmentImage/infoPage",
+        "tempPath": "/home/saurabh/Desktop/APIS/developmentImage/temp/",
+        "supplierImagePath": "/home/saurabh/morningBagImages/supplier/"
+    },
+    "sendgrid": {
+        "key": "",
+        "productApprovedTemplateId": "",
+        "ExistingProductApprovedTemplateId": "",
+        "voucherCodeTemplateId": ""
+    },
+    "cron": {
+        "sellerDeliveryAmountTransferDays": 3,
+        "sellerOrderwalletTransferCronTime": "0 34 13 * * *",
+        "sellerDeliverywalletTransferCronTime": "0 14 12 * * *",
+        "offerExpireCronTime": "0 06 11 * * *",
+        "subscriptionReminderTime": "0 27 15 * * *",
+        "subscriptionReminderDays": 3,
+        "completeSubscriptionCronTime": "0 42 10 * * *",
+        "token": "paperbyte",
+        "deliveryPaidToseller": {
+            "link": "http://localhost:13002/api/admin/seller/delivery/paid",
+            "method": "POST"
+        },
+        "orderPaidToseller": {
+            "link": "http://localhost:13002/api/admin/seller/order/paid",
+            "method": "POST"
+        },
+        "expireOffer": {
+            "link": "http://localhost:13002/api/admin/expire/promocode",
+            "method": "POST"
+        },
+        "reminderEmail": {
+            "link": "http://localhost:13002/api/admin/send/mail/before/3days",
+            "method": "POST"
+        },
+        "completeSubscription": {
+            "link": "http://localhost:13002/api/admin/complete/subscription",
+            "method": "POST"
+        },
+        "email": {
+            "fromEmail": "",
+            "fromName": "",
+            "refundSubject": " ",
+            "reminderSubJect": ""
+        }
+    },
+    "adminRoute": "/api/admin",
+    "collections": {
+        "adminroles": "adminroles"
+    },
+    "cyptoKey": {
+        "key": ""
+    },
+    "msgWow": {
+        "authKey": "",
+        "senderId": "",
+        "route": 1,
+        "country": 91,
+        "urllink": ""
+    },
+    "bulkMSG": {
+        "apiKey": "",
+        "username": "",
+        "sendername": "",
+        "smstype": "",
+        "getcheckMesageUrl": ""
+    },
+    "smsTurtle": {
+        "apiKey": "",
+        "sendername": "",
+        "smstype": "text"
+    },
+    "previousDay": 30,
+    "elasticSearch": {
+        "index": {
+            "products": ""
+        },
+        "hosts": [""]
+    },
+    "awsConfig": {
+        "accessKeyId": "",
+        "secretAccessKey": "",
+        "region": ""
+    }
+}

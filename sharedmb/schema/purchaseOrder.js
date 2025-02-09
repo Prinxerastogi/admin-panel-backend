@@ -1,0 +1,78 @@
+let mongoose = require("mongoose");
+let Schema = mongoose.Schema;
+let AutoIncrement = require("mongoose-sequence")(mongoose);
+
+let purchaseOrderSchema = new Schema({
+    id: { type: Number },
+    sellerId: { type: Schema.Types.ObjectId, ref: "seller" },
+    supplierId: { type: Schema.Types.ObjectId, ref: "supplier" },
+    purchaseRequestId: { type: Schema.Types.ObjectId, ref: "purchaseRequest" },
+    purchaseRequestNo: { type: Number },
+    supplierQuotationId: {
+        type: Schema.Types.ObjectId,
+        ref: "supplierQutotion",
+    },
+    supplierQuotationNo: { type: Number },
+    sellerAddress: {
+        name: { type: String },
+        address: { type: String },
+        email: { type: String },
+        mobile: { type: String },
+        gst: { type: String },
+    },
+    supplierAddress: {
+        name: { type: String },
+        address: { type: String },
+        email: { type: String },
+        mobile: { type: String },
+        gst: { type: String },
+    },
+    products: [
+        {
+            productCode: { type: String, lowercase: true },
+            barcode: { type: String, lowercase: true },
+            productId: { type: Schema.Types.ObjectId, ref: "product" },
+            productName: { type: String, lowercase: true },
+            brandId: { type: Schema.Types.ObjectId, ref: "brand" },
+            subBrandId: { type: Schema.Types.ObjectId, ref: "brand" },
+            attribute: { type: String, lowercase: true },
+            HSN: { type: String, default: null },
+            GST: { type: Number, default: 0 },
+            IGST: { type: Number, default: 0 },
+            CGST: { type: Number, default: 0 },
+            SGST: { type: Number, default: 0 },
+            CESS: { type: Number, default: 0 },
+            mrp: { type: Number, default: 0 },
+            unitPrice: { type: Number, default: 0 }, //tax excluded price given by supplier
+            purchasePrice: { type: Number, default: 0 }, //tax included price (gst included)
+            purchaseQuantity: { type: Number, default: 0 },
+            subTotal: { type: Number, default: 0 }, //unit price(quantity*unitPrice) total exclude tax/gst
+            totalPrice: { type: Number, default: 0 }, //purchase price * purchaseQuantity (GST/tax included)
+            GRNQuantityReceived: { type: Number, default: 0 },
+            isRecieved: { type: Boolean, default: false },
+            canGRNGenerate: { type: Boolean, default: false },
+            created: { type: Date },
+            updated: { type: Date },
+            date: { type: Date },
+            updatedDate: [{ type: Date }],
+            status: { type: String }, //new,confirm,reject
+        },
+    ],
+    totalQuantity: { type: Number, default: 0 },
+    subGrandTotal: { type: Number, default: 0 }, //All products unit price(quantity*unitPrice) total exclude tax/gst
+    grandTotal: { type: Number, default: 0 }, //All products price(quantity*purchaseprice) total include tax/gst
+    paymentTerms: { type: String },
+    paymentDays: { type: Number, default: 0 },
+    deliveryDays: { type: String },
+    status: { type: String, lowercase: true, default: "new" }, //new,cancel,inprogress,closed
+    created: { type: Date },
+    updated: { type: Date },
+    date: { type: Date },
+    isPayment: { type: Boolean },
+});
+
+purchaseOrderSchema.plugin(AutoIncrement, {
+    inc_field: "id",
+    id: "purcahseOrderId",
+});
+module.exports = mongoose.model("purchaseorder", purchaseOrderSchema);

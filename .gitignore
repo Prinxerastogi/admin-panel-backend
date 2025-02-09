@@ -1,0 +1,13 @@
+/swagger
+/node_modules
+/uploads
+/public/images/profile
+/logssendgrid.env
+/logs
+package-lock.json
+sendgrid.env
+sendgrid.env
+sendgrid.env
+.vscode/launch.json
+.DS_Store
+.env

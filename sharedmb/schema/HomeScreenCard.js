@@ -1,0 +1,38 @@
+let mongoose = require("mongoose");
+let Schema = mongoose.Schema;
+
+const HomeScreenCardSchema = new Schema({
+    type: { type: String, lowercase: true }, // HorizontalBanner, VerticalBanner, Category, Product, Gif
+    title: { type: String, lowercase: true },
+    categories: [
+        {
+            categoryId: { type: mongoose.Types.ObjectId, ref: "category" },
+        },
+    ],
+    image: [
+        {
+            imgUrl: { type: String },
+            productId: { type: String },
+            keyword: { type: String },
+            productUrl: { type: String },
+            type: { type: String },
+        },
+    ],
+    categoryItems: {
+        categoryId: { type: mongoose.Types.ObjectId, ref: "category" },
+    },
+    popularproducts: [
+        {
+            productId: { type: mongoose.Types.ObjectId, ref: "product" },
+            displayName: { type: String },
+        },
+    ],
+    gifUrl: { type: String },
+    name: { type: String, lowercase: true },
+    isDeleted: { type: Boolean, default: false },
+    position: Number,
+    created: Number,
+    updated: Number,
+});
+
+module.exports = mongoose.model("HomeScreenCard", HomeScreenCardSchema);
