@@ -190,7 +190,7 @@ const getSvgCards = async (req, res, next) => {
         {
             $match: {
                 isDeleted: false,
-                type: { $in: ["gif", "searchpagebanners"] },
+                type: { $in: ["gif", "searchpagebanners", "featurewall"] },
             },
         },
     ];
