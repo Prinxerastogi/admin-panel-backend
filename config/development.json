@@ -16,7 +16,8 @@
         "blogImagePath": "/var/www/developmentImage/blog/",
         "banner": "/var/www/developmentImage/banner/",
         "infoImagePath": "/var/www/developmentImage/infoPage/",
-        "apkFilePath": "/var/www/developmentImage/apk/"
+        "apkFilePath": "/var/www/developmentImage/apk/",
+        "customImages": "/var/www/developmentImage/banner/notifs/"
     },
     "sendgrid": {
         "key": "",

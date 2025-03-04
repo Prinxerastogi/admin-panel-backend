@@ -13,6 +13,7 @@ let productSchema = new Schema({
     howToUse: { type: String },
     benefits: { type: String },
     nutritionalFacts: [{}],
+    nutritionalBaseQuantity: { type: Number},
     lDescription: { type: String, lowercase: true },
     shortDesc: { type: String },
     lShortDesc: { type: String, lowercase: true },

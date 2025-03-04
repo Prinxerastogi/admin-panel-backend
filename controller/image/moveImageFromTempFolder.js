@@ -1,5 +1,4 @@
-let createImageVariant = require("../image/imageVariant"),
-    config = require("config"),
+let config = require("config"),
     fs = require("fs-extra"),
     async = require("async");
 

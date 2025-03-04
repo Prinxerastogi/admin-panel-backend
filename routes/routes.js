@@ -1,5 +1,8 @@
 let express = require("express");
 let controller = require("../controller");
+const path = require("path");
+const fs = require("fs");
+
 let apiRoutes = express.Router();
 
 apiRoutes.get("/home", controller.home); ////not in use
@@ -39,6 +42,24 @@ apiRoutes.use(controller.middleware.tokenmiddleware);
 // apiRoutes.use(controller.middleware.aclmiddeleware)
 apiRoutes.post("/remove/product/image", controller.image.removeProductImage);
 apiRoutes.post("/remove/category/image", controller.category.deleteImage);
+apiRoutes.put("/customImages", controller.image.copyImageToServer);
+apiRoutes.get(
+    "/deleteCustomImage/:filename",
+    controller.image.deleteImageFromServer
+);
+apiRoutes.get("/customImages", (req, res) => {
+    const directoryPath = path.join(config.upload.customImages);
+    console.log(directoryPath);
+    fs.readdir(directoryPath, (err, files) => {
+        if (err) {
+            return res.status(500).send("Unable to scan directory");
+        }
+        const imageFiles = files.filter((file) =>
+            /\.(jpg|jpeg|png|gif)$/.test(file)
+        );
+        res.json({ success: true, images: imageFiles });
+    });
+});
 
 apiRoutes.get(
     "/assign/seller/area/:sellerId",
@@ -139,6 +160,8 @@ apiRoutes.get(
     controller.product.seller.notApprovedProductList
 );
 apiRoutes.get("/exportProductList", controller.product.exportProductList);
+apiRoutes.post("/copyProduct", controller.product.copyProduct);
+apiRoutes.get("/getProduct/:productId", controller.product.getProduct);
 
 apiRoutes.get("/products/bycategory", controller.product.productListBycategory);
 apiRoutes.post("/product/hold", controller.product.hold);
