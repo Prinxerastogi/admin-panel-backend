@@ -20,7 +20,10 @@ const copyProduct = async (req, res) => {
         }
 
         // Find the product from which we are copying
-        const copyFromProduct = await productSchema.findById(copyFromProductId);
+        const findCondition = mongoose.isValidObjectId(copyFromProductId)
+            ? { _id: copyFromProductId }
+            : { id: copyFromProductId };
+        const copyFromProduct = await productSchema.findOne(findCondition);
         if (!copyFromProduct) {
             return res
                 .status(404)
@@ -60,8 +63,5 @@ const copyProduct = async (req, res) => {
             .json({ success: false, message: "Internal server error" });
     }
 };
-
-
-
 
 module.exports = copyProduct;
