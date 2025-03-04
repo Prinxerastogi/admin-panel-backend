@@ -86,11 +86,7 @@ const getBannerCards = async (req, res, next) => {
         },
         {
             $match: {
-                $or: [
-                    { type: "horizontalbanner" },
-                    { type: "verticalbanner" },
-                    { type: "featurewwall" },
-                ],
+                $or: [{ type: "horizontalbanner" }, { type: "verticalbanner" }],
             },
         },
     ];
@@ -118,12 +114,7 @@ const getGifCards = async (req, res, next) => {
             $match: {
                 isDeleted: false,
                 type: {
-                    $in: [
-                        "gif",
-                        "searchpagebanners",
-                        "categorypagebanners",
-                        "featurewall",
-                    ],
+                    $in: ["gif", "searchpagebanners", "categorypagebanners"],
                 },
             },
         },
