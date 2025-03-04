@@ -208,10 +208,11 @@ let updateCategory = (req, res, next) => {
         updateOtherData.$push = {};
         updateOtherData.$set.images = [req.body.images[0]];
     }
-    if (req.body.nutritionalBaseQuantity) { 
-        updateOtherData.$set.nutritionalBaseQuantity = Number(req.body.nutritionalBaseQuantity);
+    if (req.body.nutritionalBaseQuantity) {
+        updateOtherData.$set.nutritionalBaseQuantity =
+            req.body.nutritionalBaseQuantity;
     }
-    
+
     crudModel.findOneAndUpdate(
         { _id: req.body._id },
         updateOtherData,
