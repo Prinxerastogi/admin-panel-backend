@@ -119,6 +119,10 @@ app.use(
     "/api/admin/public/membership",
     express.static(config.upload.memberShipImagePath)
 );
+app.use(
+    "/api/admin/public/customImages",
+    express.static(config.upload.customImages)
+);
 app.use("/api/admin/public/city", express.static(config.upload.cityImagePath));
 app.use("/api/admin/public/blog", express.static(config.upload.blogImagePath));
 app.use("/api/admin/public/banner", express.static(config.upload.banner));
