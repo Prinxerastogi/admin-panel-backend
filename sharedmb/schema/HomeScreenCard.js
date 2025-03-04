@@ -16,6 +16,8 @@ const HomeScreenCardSchema = new Schema({
             keyword: { type: String },
             productUrl: { type: String },
             type: { type: String },
+            width: { type: String },
+            aspectRatio: { type: String },
         },
     ],
     categoryItems: {
@@ -28,6 +30,8 @@ const HomeScreenCardSchema = new Schema({
         },
     ],
     gifUrl: { type: String },
+
+    featureImage: { type: String }, // Single image URL
     name: { type: String, lowercase: true },
     isDeleted: { type: Boolean, default: false },
     position: Number,

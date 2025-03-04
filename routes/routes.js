@@ -139,6 +139,8 @@ apiRoutes.get(
     controller.product.seller.notApprovedProductList
 );
 apiRoutes.get("/exportProductList", controller.product.exportProductList);
+apiRoutes.post("/copyProduct", controller.product.copyProduct);
+apiRoutes.get("/getProduct/:productId", controller.product.getProduct);
 
 apiRoutes.get("/products/bycategory", controller.product.productListBycategory);
 apiRoutes.post("/product/hold", controller.product.hold);
