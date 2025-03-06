@@ -59,4 +59,10 @@ module.exports = {
             productId: Joi.string().required(),
         },
     },
+ add: {
+        body: {
+            // sellerId: Joi.string().required(),
+            productId: Joi.string().required(),
+        },
+    },
 };

@@ -37,4 +37,8 @@ module.exports = {
     view: {
         error: "error occured in productView",
     },
+
+    add: {
+        addSuccessfully: "product add request has been sent ",
+    },
 };

@@ -6,11 +6,17 @@ let crudModel = require("../../sharedmb/models/crud"),
     seller = require("../../sharedmb/schema/seller"),
     utility = require("../../sharedmb/utility/utility"),
     config = require("config"),
-    MESSAGE = require("./message");
+    MESSAGE = require("./message"),
+    sellerProductSchema = require("../../sharedmb/schema/sellerProduct"),
+    sellerSchema = require("../../sharedmb/schema/seller"),
+    categorySchema = require("../../sharedmb/schema/category"),
+    sellerBrandSchema = require("../../sharedmb/schema/sellerBrand"),
+    mongoose = require("mongoose");
 
 //sens email when the seller Aproved proved.
 
 let activeDeactive = (req, res, next) => {
+console.log("I am at step 0");
     let condition = {
         _id: req.body.productId,
     };
@@ -18,6 +24,11 @@ let activeDeactive = (req, res, next) => {
         $set: {
             isActive: req.body.status,
             updated: new Date().getTime(),
+            verification: {
+                isImageVerify: true,
+                isproductDetailVerify: true,
+                isApproved: true,
+            },
         },
     };
     let option = {};
@@ -37,17 +48,10 @@ let activeDeactive = (req, res, next) => {
             } else if (updated) {
                 req.data = {};
                 req.data.product = updated;
-                if (updated.addedBy.type == "admin") {
-                    return res.status(200).json({
-                        success: true,
-                        message: `product is in ${req.body.status}`,
-                    });
-                }
-                res.status(200).json({
-                    success: true,
-                    message: `product is in ${req.body.status}`,
-                });
+	if(req.body.status)
                 next();
+else
+		return res.json({success:true,message:"Product deactivated"})
             } else {
                 return res.status(201).json({
                     success: false,
@@ -59,6 +63,8 @@ let activeDeactive = (req, res, next) => {
 };
 
 let findSeller = (req, res, next) => {
+console.log("I am at step 1");
+return next();
     let product = req.data.product;
     if (product.addedBy.type == "seller") {
         let condition = {
@@ -79,7 +85,10 @@ let findSeller = (req, res, next) => {
     }
 };
 
-let sendEmail = (req, res) => {
+let sendEmail = (req, res,next) => {
+console.log("I am at step 2");
+return next();
+
     let seller = req.data.seller;
     if (utility.isEmail(seller.email)) {
         let product = req.data.product;
@@ -110,9 +119,233 @@ let sendEmail = (req, res) => {
     }
 };
 
+let findProductIsAlreadyAddOrNot = (req, res, next) => {
+console.log("I am at step 3");  
+  let condition = [
+        {
+            $match: {
+                $and: [
+                    {
+                        sellerId: mongoose.Types.ObjectId('617d2982bd68c94d0bcb9200'),
+                    },
+                    {
+                        productId: mongoose.Types.ObjectId(req.body.productId),
+                    },
+                ],
+            },
+        },
+    ];
+    crudModel.aggregation(condition, sellerProductSchema, (err, product) => {
+        if (err) {
+            return res.status(400).json({
+                error: true,
+                success: false,
+                message: MESSAGE.add.errorInFindProduct,
+                error: err,
+            });
+        } else if (product && product.length > 0) {
+            return res
+                .status(200)
+                .json({ success: true, message: "Product already exists" });
+        } else {
+            next();
+        }
+    });
+};
+
+let findProductDetails = (req, res, next) => {
+console.log("I am at step 4");
+    let condition = {
+        _id: req.body.productId,
+    };
+    productSchema.findOne(condition, (err, response) => {
+        if (err) {
+            return res.status(400).json({
+                error: true,
+                success: false,
+                message: MESSAGE.add.errorInFindProduct,
+                error: err,
+            });
+        } else if (response) {
+            req.data = {};
+            req.data.product = response;
+            next();
+        } else {
+            next();
+        }
+    });
+};
+
+let saveSellerProduct = (req, res, next) => {
+console.log("I am at step 5");
+    let productData = {
+        sellerId: mongoose.Types.ObjectId('617d2982bd68c94d0bcb9200'),
+        productId: mongoose.Types.ObjectId(req.data.product._id),
+        categoryId: mongoose.Types.ObjectId(req.data.product.categoryId),
+        price: req.data.product.price ? req.data.product.price : null,
+        sellPrice: req.data.product.sellPrice
+            ? req.data.product.sellPrice
+            : null,
+        minSellPrice: req.data.product.minSellPrice
+            ? req.data.product.minSellPrice
+            : null,
+        purchasePrice: req.data.product.purchasePrice
+            ? req.data.product.purchasePrice
+            : null,
+        membershipPrice: req.data.product.membershipPrice
+            ? req.data.product.membershipPrice
+            : null,
+        storeMinQuantity: 5,
+        perUserOrderQuantity: 5,
+        created: new Date().getTime(),
+        updated: new Date().getTime(),
+        date: new Date(),
+        isOrder: true,
+        isActive: true,
+	isApproved:true,
+	approvedBy: mongoose.Types.ObjectId('617d23988687260562abcc99')
+    };
+
+    crudModel.create(productData, sellerProductSchema, (err, response) => {
+        if (err) {
+            return res.status(400).json({
+                error: true,
+                success: false,
+                message: MESSAGE.add.errorInCreateProductData,
+                error: err,
+            });
+        } else {
+            res.status(200).json({
+                success: true,
+                message: MESSAGE.add.addSuccessfully,
+            });
+            next();
+        }
+    });
+};
+
+let updateSellerBrand = (req, res, next) => {
+console.log("I am at step 6");    
+let condition = {
+        sellerId: req.decoded.id,
+        brandId: req.data.product.brand.id,
+        subBrandId: req.data.product.subBrand.id,
+    };
+    let update = {
+        $set: {
+            sellerId: req.decoded.id,
+            brandId: req.data.product.brand.id,
+            subBrandId: req.data.product.subBrand.id,
+            retailMargin: null,
+            custMargin: null,
+        },
+    };
+    sellerBrandSchema.updateOne(
+        condition,
+        update,
+        { upsert: true },
+        (err, response) => {
+            if (err) {
+                return res.status(400).json({
+                    error: true,
+                    success: false,
+                    message: "error in updating seller brand",
+                    error: err,
+                });
+            } else {
+                next();
+            }
+        }
+    );
+};
+
+let findSellerAndProduct = (req, res, next) => {
+console.log("I am at step 7");
+    let condition = [
+        {
+            $match: {
+                sellerId: mongoose.Types.ObjectId(req.decoded.id),
+                productId: mongoose.Types.ObjectId(req.body.productId),
+                categoryId: mongoose.Types.ObjectId(req.body.categoryId),
+            },
+        },
+        {
+            $lookup: {
+                from: "sellers",
+                localField: "sellerId",
+                foreignField: "_id",
+                as: "seller",
+            },
+        },
+        {
+            $unwind: {
+                path: "$seller",
+            },
+        },
+        {
+            $lookup: {
+                from: "products",
+                localField: "productId",
+                foreignField: "_id",
+                as: "product",
+            },
+        },
+        {
+            $unwind: {
+                path: "$product",
+            },
+        },
+    ];
+    crudModel.aggregation(
+        condition,
+        sellerProductSchema,
+        (err, sellerAndProduct) => {
+            if (err) {
+                console.log("ERROR:" + err);
+            } else if (sellerAndProduct && sellerAndProduct.length > 0) {
+                req.data = {};
+                req.data.sellerAndProduct = sellerAndProduct[0];
+                next();
+            } else {
+                return 1;
+            }
+        }
+    );
+};
+
+let updateSellerCityinProduct = (req, res) => {
+console.log("I am at step 8");
+    let sellerAndProduct = req.data.sellerAndProduct;
+    crudModel.updateOne(
+        { _id: sellerAndProduct.product._id },
+        {
+            $addToSet: {
+                cityIds: sellerAndProduct.seller.cities,
+            },
+        },
+        {},
+        productSchema,
+        (err, updated) => {
+            if (err) {
+                console.log("ERROR:" + err);
+                return 0;
+            } else {
+                return 1;
+            }
+        }
+    );
+};
+
 module.exports = [
     validate(validation.activeDeactive),
     activeDeactive,
     findSeller,
     sendEmail,
+    validate(validation.add),
+    findProductIsAlreadyAddOrNot,
+    findProductDetails,
+    saveSellerProduct,
+    updateSellerBrand,
+    findSellerAndProduct,
+    updateSellerCityinProduct,
 ];
