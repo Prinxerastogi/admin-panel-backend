@@ -9,6 +9,11 @@ const HomeScreenCardSchema = new Schema({
             categoryId: { type: mongoose.Types.ObjectId, ref: "category" },
         },
     ],
+    deviceType: {
+        type: [String],
+        enum: ["Android", "Browser", "iOS"],
+        default: ["Android", "Browser", "iOS"],
+    },
     image: [
         {
             imgUrl: { type: String },
