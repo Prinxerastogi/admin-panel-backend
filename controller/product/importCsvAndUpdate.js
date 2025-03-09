@@ -1,8 +1,8 @@
 const fs = require("fs");
 const csv = require("csv-parser");
 const multer = require("multer");
-const sellerProduct = "../../../sharedmb/schema/sellerproduct";
-const product = "../../../sharedmb/schema/product";
+// const sellerProductSchema = require("../../sharedmb/schema/sellerproduct");
+const productSchema = require("../../sharedmb/schema/product");
 const mongoose = require("mongoose");
 const { ObjectId } = mongoose.Types;
 
@@ -40,32 +40,48 @@ module.exports = [
         // row name sellerProductId	ManufacturerDetails	Country	ExpiryMonth
         // Read CSV file and update documents
         try {
+            let errProds = [];
+            let successProds = 0;
             fs.createReadStream(filePath)
                 .pipe(csv())
                 .on("data", async (row) => {
                     try {
-                        const singleDoc = await sellerProduct.findOne({
-                            _id: ObjectId(row.sellerProductId),
-                        });
-                        await product.updateOne(
-                            {
-                                _id: ObjectId(singleDoc.productId),
-                            },
-                            {
-                                $set: {
-                                    manufacturerDetails:
-                                        row.ManufacturerDetails,
-                                    country: row.Country,
-                                    expiryMonth: row.ExpiryMonth,
-                                    fssaiNo: row.FSSAI,
-                                },
-                            }
-                        );
+                        let updateBlock = {};
+                        if (row?.barCode && row?.barCode2) {
+                            updateBlock["$set"] = {
+                                altBarCodes: [row.barCode, row.barCode2],
+                            };
+                        } else if (row?.barCode && !row?.barCode2) {
+                            updateBlock["$set"] = {
+                                altBarCodes: [row.barCode],
+                            };
+                        } else if (!row?.barCode && row?.barCode2) {
+                            updateBlock["$set"] = {
+                                altBarCodes: [row.barCode2],
+                            };
+                        } else {
+                            errProds.push(row?.hsnCode);
+                        }
+                        productSchema
+                            .findOneAndUpdate(
+                                { hsnCode: row?.hsnCode },
+                                updateBlock
+                            )
+                            .then((doc) => {
+                                if (doc) {
+                                    successProds++;
+                                } else {
+                                    errProds.push(row?.hsnCode);
+                                }
+                            });
                     } catch (err) {
                         console.error("Error updating document:", err);
                     }
                 })
                 .on("end", () => {
+                    console.log("success", successProds);
+                    console.log("error", errProds.length);
+                    console.log(errProds);
                     client.close();
                     // Optionally, delete the uploaded file after processing
                     fs.unlinkSync(filePath);
