@@ -1,8 +1,8 @@
 const fs = require("fs");
 const csv = require("csv-parser");
 const multer = require("multer");
-const sellerProductSchema = "../../../sharedmb/schema/sellerproduct";
-const productSchema = "../../../sharedmb/schema/product";
+// const sellerProductSchema = require("../../sharedmb/schema/sellerproduct");
+const productSchema = require("../../sharedmb/schema/product");
 const mongoose = require("mongoose");
 const { ObjectId } = mongoose.Types;
 
