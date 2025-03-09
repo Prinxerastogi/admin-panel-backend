@@ -176,6 +176,7 @@ let productSchema = new Schema({
     recommendedAttribute: { type: String, lowercase: true },
     addmore: {},
     barCode: { type: String, lowercase: true },
+    altBarCodes: [{ type: String, lowercase: true }],
     productFamilyId: { type: Schema.Types.ObjectId, default: null },
     cityIds: [],
     fssaiNo: { type: String, lowercase: true },
