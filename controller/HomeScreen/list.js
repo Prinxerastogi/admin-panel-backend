@@ -33,6 +33,7 @@ const getCategoryCards = async (req, res, next) => {
                 created: 1,
                 updated: 1,
                 date: 1,
+                deviceType: 1,
                 category: {
                     name: { $arrayElemAt: ["$category.categoryInfo.name", 0] },
                     images: {
@@ -59,6 +60,7 @@ const getCategoryCards = async (req, res, next) => {
                 created: { $first: "$created" },
                 updated: { $first: "$updated" },
                 categories: { $push: "$category" },
+                deviceType: { $first: "$deviceType" },
             },
         },
     ];
@@ -135,6 +137,7 @@ const getPopularProductCards = async (req, res, next) => {
                 date: { $first: "$date" },
                 productInfo: { $push: "$productInfo" },
                 popularproducts: { $push: "$popularproducts" },
+                deviceType: { $first: "$deviceType" },
             },
         },
         {
@@ -145,6 +148,7 @@ const getPopularProductCards = async (req, res, next) => {
                 created: 1,
                 updated: 1,
                 date: 1,
+                deviceType: 1,
                 popularproducts: {
                     $map: {
                         input: "$productInfo",
@@ -232,6 +236,7 @@ const getProductCards = async (req, res) => {
                 created: 1,
                 updated: 1,
                 date: 1,
+                deviceType: 1,
                 categoryItems: {
                     categoryName: { $arrayElemAt: ["$categoryInfo.name", 0] },
                     categoryId: 1,
