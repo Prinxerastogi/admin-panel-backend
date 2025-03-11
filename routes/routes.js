@@ -406,7 +406,9 @@ apiRoutes.get(
     "/deliveryboy/bankaccountDetails",
     controller.deliveryBoy.bankdetails
 );
-
+apiRoutes.get("/deliveryboy/report", controller.deliveryBoy.report);
+apiRoutes.post("/deliveryboy/deductAmount", controller.deliveryBoy.deductAmount);
+apiRoutes.post("/deliveryboy/updateRentedBike", controller.deliveryBoy.updateRentedBike);
 apiRoutes.post("/importCsvAndUpdate", controller.product.importCsvAndUpdate);
 
 apiRoutes.post(
@@ -421,4 +423,6 @@ apiRoutes.post("/campaign/create", controller.campaigns.createCampaign);
 apiRoutes.post("/campaign/complete", controller.campaigns.completeCampaign);
 apiRoutes.post("/campaign/start", controller.campaigns.startCampaign);
 apiRoutes.post("/campaign/test", controller.campaigns.testCampaign);
+apiRoutes.put("/updateFeatureWall/:id", controller.HomeScreen.update);
+apiRoutes.get("/featureWall/:id", controller.HomeScreen.getFeatureWall);    
 module.exports = apiRoutes;
