@@ -28,6 +28,13 @@ apiRoutes.get("/deleteTag/:tag_id", controller.tags.deleteTag);
 
 apiRoutes.post("/compare/product", controller.cron.compareProduct);
 
+apiRoutes.post("/createSmartList", controller.smartList.createSmartList);
+apiRoutes.put("/updateSmartList", controller.smartList.updateSmartList);
+apiRoutes.get("/smartlist", controller.smartList.smartList);
+apiRoutes.get("/getSmartList/:smartlist_id", controller.smartList.getSmartList)
+apiRoutes.get("/deleteSmartList/:smartlist_id", controller.smartList.deleteSmartList);
+apiRoutes.get("/getSmartListProducts/:smartlist_name", controller.smartList.getSmartListProducts)
+
 ////apiRoutes.post('/subscription/notaccepted',   controller.cronjob.refundAmountToUser)
 ////apiRoutes.post('/refundamount',               controller.cronjob.refundAmountToUser);
 
