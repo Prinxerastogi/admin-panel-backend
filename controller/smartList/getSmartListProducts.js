@@ -147,12 +147,6 @@ const getSmartListProducts = async (req, res) => {
                     )
                 }
             },
-
-            {
-                $project: {
-                    name: 1
-                }
-            }
         ])
         if (!products.length) {
             return res.status(404).json({ success: false, message: "No products found" });
