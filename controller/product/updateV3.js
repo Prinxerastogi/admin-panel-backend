@@ -12,6 +12,9 @@ let updateProduct = (req, res) => {
         nutritionalFacts: product?.nutritionalFacts
             ? product?.nutritionalFacts
             : [],
+        country: product?.country ? product?.country : "",
+        manufacturerDetails: product?.manufacturerDetails ? product?.manufacturerDetails : "",
+        fssaiNo: product?.fssaiNo ? product?.fssaiNo : "",
     };
     let condition = {
         _id: req.body.productId,
