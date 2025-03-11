@@ -147,6 +147,30 @@ const getSmartListProducts = async (req, res) => {
                     )
                 }
             },
+
+            {
+                $addFields: {
+                    quantity: "$sellerProducts.quantity",
+                    perUserOrderQuantity: "$sellerProducts.perUserOrderQuantity",
+                    price: "$sellerProducts.price",
+                    sellPrice: "$sellerProducts.sellPrice",
+                    minSellPrice: "$sellerProducts.minSellPrice",
+                    storeMinQuantity: "$sellerProducts.storeMinQuantity",
+                    isOrder: "$sellerProducts.isOrder",
+                    isLastBuy: "$sellerProducts.isLastBuy",
+                    isSubscription: "$sellerProducts.isSubscription",
+                    isMorningBuy: "$sellerProducts.isMorningBuy",
+                    outofStock: {
+                        $cond: {
+                            if: { $lte: ["$sellerProducts.quantity", 0] },
+                            then: 1,
+                            else: 0
+                        }
+                    }
+                }
+            },
+
+            { $unset: "brand" }
         ])
         if (!products.length) {
             return res.status(404).json({ success: false, message: "No products found" });
