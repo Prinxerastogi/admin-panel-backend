@@ -26,9 +26,6 @@ const getCampaignDetails = async (req, res) => {
                 },
             },
             {
-                $unwind: {},
-            },
-            {
                 $lookup: {
                     from: "orders",
                     let: {
@@ -104,6 +101,7 @@ const getCampaignDetails = async (req, res) => {
             },
         });
     } catch (err) {
+        console.log(err);
         res.status(400).json({
             message: err.message,
             success: false,

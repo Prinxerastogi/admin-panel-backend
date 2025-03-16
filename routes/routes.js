@@ -28,6 +28,13 @@ apiRoutes.get("/deleteTag/:tag_id", controller.tags.deleteTag);
 
 apiRoutes.post("/compare/product", controller.cron.compareProduct);
 
+apiRoutes.post("/createSmartList", controller.smartList.createSmartList);
+apiRoutes.put("/updateSmartList", controller.smartList.updateSmartList);
+apiRoutes.get("/smartlist", controller.smartList.smartList);
+apiRoutes.get("/getSmartList/:smartlist_id", controller.smartList.getSmartList)
+apiRoutes.get("/deleteSmartList/:smartlist_id", controller.smartList.deleteSmartList);
+apiRoutes.get("/getSmartListProducts/:smartlist_name", controller.smartList.getSmartListProducts)
+
 ////apiRoutes.post('/subscription/notaccepted',   controller.cronjob.refundAmountToUser)
 ////apiRoutes.post('/refundamount',               controller.cronjob.refundAmountToUser);
 
@@ -399,7 +406,9 @@ apiRoutes.get(
     "/deliveryboy/bankaccountDetails",
     controller.deliveryBoy.bankdetails
 );
-
+apiRoutes.get("/deliveryboy/report", controller.deliveryBoy.report);
+apiRoutes.post("/deliveryboy/deductAmount", controller.deliveryBoy.deductAmount);
+apiRoutes.post("/deliveryboy/updateRentedBike", controller.deliveryBoy.updateRentedBike);
 apiRoutes.post("/importCsvAndUpdate", controller.product.importCsvAndUpdate);
 
 apiRoutes.post(
@@ -414,4 +423,6 @@ apiRoutes.post("/campaign/create", controller.campaigns.createCampaign);
 apiRoutes.post("/campaign/complete", controller.campaigns.completeCampaign);
 apiRoutes.post("/campaign/start", controller.campaigns.startCampaign);
 apiRoutes.post("/campaign/test", controller.campaigns.testCampaign);
+apiRoutes.put("/updateFeatureWall/:id", controller.HomeScreen.update);
+apiRoutes.get("/featureWall/:id", controller.HomeScreen.getFeatureWall);    
 module.exports = apiRoutes;

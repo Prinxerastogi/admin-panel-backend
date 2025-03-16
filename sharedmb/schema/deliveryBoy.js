@@ -61,6 +61,7 @@ let deliveryBoySchema = new Schema(
         rating: { type: Number },
         onlineTime: { type: Date },
         offlineTime: { type: Date },
+        bikeRented: { type: Boolean, default: false }, 
     },
     {
         toObject: { getters: true, setters: true },

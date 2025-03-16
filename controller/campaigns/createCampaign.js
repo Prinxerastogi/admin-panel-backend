@@ -5,7 +5,7 @@ const fs = require("fs");
 const csv = require("csv-parser");
 
 // Ensure uploads folder exists
-const uploadDir = "uploads/";
+const uploadDir = "/tmp/";
 if (!fs.existsSync(uploadDir)) {
     fs.mkdirSync(uploadDir, { recursive: true });
 }
@@ -16,7 +16,12 @@ const storage = multer.diskStorage({
         cb(null, uploadDir);
     },
     filename: function (req, file, cb) {
-        cb(null, `campaign-${Date.now()}${path.extname(file.originalname)}`);
+        cb(
+            null,
+            `campaign-${Math.floor(Date.now() / 60000)}${path.extname(
+                file.originalname
+            )}`
+        );
     },
 });
 
@@ -54,6 +59,7 @@ const createCampaign = async (req, res) => {
                     "CSV file is required when mainCampaignId is not provided!",
             });
         }
+        console.log(req.file.path);
 
         let customers = new Set();
 
@@ -100,6 +106,7 @@ const createCampaign = async (req, res) => {
             });
         }
     } catch (error) {
+        console.log("Error creating campaign:", error);
         res.status(500).json({ message: error.message });
     }
 };
@@ -117,7 +124,7 @@ const saveCampaign = async (
             status: "pending",
             amount,
             isMain: !mainCampaignId,
-            mainCampaignId,
+            mainCampaignId: mainCampaignId || null,
             targetCustomers: [...customers],
         });
 
