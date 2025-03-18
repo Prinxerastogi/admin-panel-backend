@@ -281,6 +281,7 @@ let updateProduct = (req, res) => {
         purchasePrice: product.purchasePrice,
         minSellPrice: product.minSellPrice,
         barCode: product.barCode,
+        altBarCodes: product.altBarCodes ? product.altBarCodes.map(code => code.toLowerCase()) : [],
     };
     let condition = {
         _id: req.body.productId,
