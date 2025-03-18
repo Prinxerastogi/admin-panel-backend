@@ -26,10 +26,20 @@ const deductAmount = async (req, res) => {
             remarks: "Bike Rent",
         });
 
-        await newTransaction.save();
+        const savedTransaction = await newTransaction.save();
+        if (!savedTransaction) {
+            return res.status(201).json({ success: false, message: "Failed to save transaction" });
+        }
 
-        deliveryBoy.currentBalance = closingBalance;
-        await deliveryBoy.save();
+        const updatedDeliveryBoy = await deliveryBoySchema.findOneAndUpdate(
+            { _id: deliveryPartnerId },
+            { $inc: { currentBalance: -deductionAmount } },
+            { new: true }
+        );
+        
+        if (!updatedDeliveryBoy) {
+            return res.status(201).json({ success: false, message: "Failed to update balance" });
+        }
 
         return res.json({ success: true, message: "Amount deducted successfully", closingBalance });
     } catch (error) {
