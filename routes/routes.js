@@ -41,6 +41,8 @@ apiRoutes.get(
     controller.smartList.getSmartListProducts
 );
 
+apiRoutes.get("/ratings", controller.ratings.getAllRatings);
+
 ////apiRoutes.post('/subscription/notaccepted',   controller.cronjob.refundAmountToUser)
 ////apiRoutes.post('/refundamount',               controller.cronjob.refundAmountToUser);
 
