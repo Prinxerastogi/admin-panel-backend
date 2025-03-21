@@ -356,6 +356,7 @@ apiRoutes.get("/user/payment", controller.transation.view);
 //refund
 apiRoutes.get("/order/refund", controller.refund.orderRefundList);
 apiRoutes.post("/order/refund", controller.refund.orderRefund);
+apiRoutes.get("/order/reviews", controller.order.reviews);
 
 //setting
 //apiRoutes.post('/setting',                   controller.setting.add);
