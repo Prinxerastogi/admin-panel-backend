@@ -50,6 +50,7 @@ let updateSmartList = (req, res) => {
     if (req.body.maxPrice) config.maxPrice = req.body.maxPrice;
     if (req.body.minDiscount) config.minDiscount = req.body.minDiscount;
     if (req.body.maxDiscount) config.maxDiscount = req.body.maxDiscount;
+    if (req.body.tags) config.tags = req.body.tags;
 
     if (Object.keys(config).length > 0) {
         update.config = config;
@@ -65,6 +66,7 @@ let updateSmartList = (req, res) => {
     if (!req.body.maxPrice) unsetFields["config.maxPrice"] = "";
     if (!req.body.minDiscount) unsetFields["config.minDiscount"] = "";
     if (!req.body.maxDiscount) unsetFields["config.maxDiscount"] = "";
+    if (!req.body.tags || req.body.tags.length === 0) unsetFields["config.tags"] = "";
 
     smartListSchema.findOneAndUpdate(condition, update, (error, updated) => {
         if (error) {

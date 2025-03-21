@@ -15,6 +15,7 @@ let smartListSchema = new Schema({
         maxPrice: { type: Number },
         minDiscount: { type: Number },
         maxDiscount: { type: Number },
+        tags: [{ type: String }],
     },
     isActive: { type: Boolean, default: true },
     createDate: { type: Date },

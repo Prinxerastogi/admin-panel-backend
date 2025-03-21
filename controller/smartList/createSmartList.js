@@ -17,7 +17,8 @@ let createSmartList = (req, res) => {
             minPrice: req.body.minPrice,
             maxPrice: req.body.maxPrice,
             minDiscount: req.body.minDiscount,
-            maxDiscount: req.body.maxDiscount
+            maxDiscount: req.body.maxDiscount,
+            tags: req.body.tags || [],
         },
         createDate: new Date(),
         isActive: req.body.isActive,
