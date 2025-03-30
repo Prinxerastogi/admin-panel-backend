@@ -70,7 +70,7 @@ let updatetags = (req, res) => {
                             req.body.products.forEach((prodId, index) => {
                                 productSchema.findOneAndUpdate(
                                     { id: Number(prodId) },
-                                    { $set: { tags: [req.body.tag_id] } },
+                                    { $push: { tags: req.body.tag_id } },
                                     (error, updated) => {
                                         if (error) {
                                             return res.status(400).json({
