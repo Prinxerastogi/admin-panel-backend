@@ -238,6 +238,7 @@ apiRoutes.get("/search/users", controller.user.serach);
 apiRoutes.get("/latest/users", controller.user.latestUserList);
 apiRoutes.get("/user", controller.user.view);
 apiRoutes.post("/reactivateUser", controller.user.reactivateUser);
+apiRoutes.get("/user/details", controller.user.getUserDetail);
 
 // apiRoutes.post("/adminUser", controller.user.create);
 // apiRoutes.put("/adminUser", controller.user.modify);

@@ -5,6 +5,7 @@ const getRatings = async (req, res) => {
         let {
             sortBy,
             ratingFilter,
+            commentFilter,
             startDate,
             endDate,
             page = 1,
@@ -22,6 +23,34 @@ const getRatings = async (req, res) => {
         } else {
             matchStage.rating = { $exists: true, $ne: 0 };
         }
+        
+        if (commentFilter && commentFilter !== "all") {
+            if (commentFilter === "withComments") {
+                matchStage.deliveryBoyComments = {
+                    $exists: true,
+                    $ne: null,
+                    $ne: "",
+                    $not: { $regex: /^\s*$/ }, 
+                    $type: "string"
+                };
+            } else if (commentFilter === "withoutComments") {
+                matchStage.$or = [
+                    { deliveryBoyComments: { $exists: false } },
+                    { deliveryBoyComments: null },
+                    { deliveryBoyComments: "" },
+                    { deliveryBoyComments: { $regex: /^\s*$/ } },
+                    { deliveryBoyComments: { $type: "null" } }
+                ];
+                
+                // Preserve other filters
+                matchStage.$and = [
+                    { rating: matchStage.rating },
+                    { $or: matchStage.$or }
+                ];
+                delete matchStage.rating;
+                delete matchStage.$or;
+            }
+        }
 
         // Start & End Date Filtering
         if (startDate || endDate) {
@@ -29,7 +58,7 @@ const getRatings = async (req, res) => {
             if (startDate) matchStage.date.$gte = new Date(startDate);
             if (endDate) matchStage.date.$lte = new Date(endDate);
         }
-
+        
         console.log("matchStage", matchStage);
         // Sorting logic
         let sortStage = {};
