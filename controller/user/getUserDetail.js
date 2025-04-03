@@ -12,15 +12,15 @@ module.exports = [
          if (_id) {
              matchCondition._id = mongoose.Types.ObjectId(_id);
          } else if (phoneNo) {
-             matchCondition.phoneNo = phoneNo; // Match by phone number
+             matchCondition.phoneNo = parseFloat(phoneNo); 
          } else {
              return res.status(400).json({
                  success: false,
                  message: "Provide either _id or phoneNo to fetch user details",
              });
          }
-
-        let conditions = [
+    
+          let conditions = [
             // Match user by _id
             {
                 $match: matchCondition,
