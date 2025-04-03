@@ -29,6 +29,8 @@ let ticketSchema = new Schema(
             type: String,
             default: "open",
         },
+        ticketTag: { type: String, default: null },
+        chatProgress: { type: String, default: "active" },
         isUnread: {
             type: Boolean,
             default: false,
