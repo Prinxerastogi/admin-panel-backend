@@ -94,7 +94,7 @@ const getRequestInfo = async (req, res, next) => {
 
 const initiateTransfer = async (req, res, next) => {
     const unique_request_number = `AKBDEL${req.data.request.id.toString()}`;
-    const amount = req.data.request.amount;
+    const amount = Math.round(req.data.request.amount * 99) / 100;
     const beneficiary_code = req.data.request.easeBuzzBenificiaryId;
 
     const toHash = `${process.env.wireKey}|${beneficiary_code}|${unique_request_number}|${amount}|${process.env.wireSalt}`;
@@ -145,9 +145,10 @@ const initiateTransfer = async (req, res, next) => {
                     deliveryPartnerId: req.data.request.deliveryPartnerId,
                     created: new Date(),
                     updated: new Date(),
-                    amount: amount,
+                    amount: req.data.request.amount,
                     openingBalance: req.data.oldBalance,
-                    closingBalance: req.data.oldBalance - amount,
+                    closingBalance:
+                        req.data.oldBalance - req.data.request.amount,
                     remarks: "withdrawn",
                 },
             ]);
@@ -157,7 +158,7 @@ const initiateTransfer = async (req, res, next) => {
                     _id: Types.ObjectId(req.data.request.deliveryPartnerId),
                 },
                 {
-                    $inc: { currentBalance: amount },
+                    $inc: { currentBalance: req.data.request.amount },
                 }
             );
             return res.json({ success: false, message: "Unable to transfer" });
