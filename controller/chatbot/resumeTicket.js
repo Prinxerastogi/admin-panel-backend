@@ -40,6 +40,7 @@ const pushMessage = async (req, res, next) => {
             $set: {
                 isUnread: true,
                 isConnected: true,
+                chatProgress: "active",
             },
         },
         {},
