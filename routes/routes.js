@@ -5,6 +5,7 @@ const path = require("path");
 const fs = require("fs");
 
 let apiRoutes = express.Router();
+const ticketController = require("../controller/chatbot/updateTicketTag");
 
 apiRoutes.get("/home", controller.home); ////not in use
 
@@ -358,6 +359,7 @@ apiRoutes.get("/user/payment", controller.transation.view);
 apiRoutes.get("/order/refund", controller.refund.orderRefundList);
 apiRoutes.post("/order/refund", controller.refund.orderRefund);
 apiRoutes.get("/order/reviews", controller.order.reviews);
+apiRoutes.post("/v2/order/refund", controller.refund.orderRefund);
 
 //setting
 //apiRoutes.post('/setting',                   controller.setting.add);
@@ -383,6 +385,18 @@ apiRoutes.put("/infopage/remove/image/:id", controller.info.deleteImages);
 apiRoutes.get("/chats", controller.chat.list);
 apiRoutes.get("/chat/:orderId", controller.chat.detail);
 
+apiRoutes.post(
+    "/chatbot/update-chat-progress",
+    controller.chatbot.updateChatProgress
+);
+
+apiRoutes.get("/chatbot/ticket-tags", ticketController.getTagOptions);
+apiRoutes.get(
+    "/chatbot/ticket-with-tag-options",
+    ticketController.getTicketWithTagOptions
+);
+apiRoutes.get("/chatbot/tickets-by-tag", ticketController.getTicketsByTag);
+apiRoutes.post("/chatbot/ticket-tag", ticketController.updateTicketTag);
 apiRoutes.get("/chatbot/listAll", controller.chatbot.listAll);
 apiRoutes.get("/chatbot/listTickets", controller.chatbot.listTickets);
 apiRoutes.get("/chatbot/viewTicket", controller.chatbot.viewTicket);

@@ -27,6 +27,12 @@ let configSchema = mongoose.Schema({
             // type: { type: String },
         },
     ],
+    chat_tags: [
+        {
+            type: String,
+            unique: true,
+        },
+    ],
 });
 exports.configSchema = configSchema;
 
