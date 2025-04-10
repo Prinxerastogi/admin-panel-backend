@@ -6,7 +6,6 @@ const refundSchema = new Schema(
     {
         id: {
             type: Number,
-            required: true,
             unique: true,
         },
         orderId: { type: Schema.Types.ObjectId, ref: "orders", index: 1 },

@@ -1,7 +1,5 @@
 let refundSchema = require("../../sharedmb/schema/refund");
-let userSchema = require("../../sharedmb/schema/user");
 let orderSchema = require("../../sharedmb/schema/order");
-let walletTransaction = require("../../sharedmb/schema/walletTransaction");
 let crud = require("../../sharedmb/models/crud");
 let mongoose = require("mongoose");
 
@@ -20,9 +18,10 @@ let findOrder = (req, res, next) => {
                 message: "error occurred in findOrder",
                 err,
             });
-        } else if (order && order.length > 0) {
+        } else if (order && order.length > 0 && order[0]._id) {
             req.data = {};
             req.data.order = order[0];
+            console.log("ORDER REFUND REQUESTED FOR", order[0]._id);
             next();
         } else {
             return res
