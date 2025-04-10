@@ -32,4 +32,5 @@ const findTicket = async (req, res, next) => {
     });
 };
 
-module.exports = [findTicket];
+
+module.exports = findTicket

@@ -400,6 +400,7 @@ apiRoutes.post("/chatbot/ticket-tag", ticketController.updateTicketTag);
 apiRoutes.get("/chatbot/listAll", controller.chatbot.listAll);
 apiRoutes.get("/chatbot/listTickets", controller.chatbot.listTickets);
 apiRoutes.get("/chatbot/viewTicket", controller.chatbot.viewTicket);
+apiRoutes.get("/chatbot/findByPhone", controller.chatbot.viewTicketByPhone);
 apiRoutes.post("/chatbot/resumeTicket", controller.chatbot.resumeTicket);
 apiRoutes.put("/chatbot/upload", controller.chatbot.image);
 apiRoutes.post("/chatbot/openNew", controller.chatbot.openNew);
