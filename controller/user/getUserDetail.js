@@ -7,21 +7,20 @@ module.exports = [
     async (req, res) => {
         let { _id, phoneNo, page = 1 } = req.query; 
         
-         // **Match Condition for Searching by _id or phoneNo**
-         let matchCondition = {};
-         if (_id) {
-             matchCondition._id = mongoose.Types.ObjectId(_id);
-         } else if (phoneNo) {
-             matchCondition.phoneNo = parseFloat(phoneNo); 
-         } else {
-             return res.status(400).json({
-                 success: false,
-                 message: "Provide either _id or phoneNo to fetch user details",
-             });
-         }
+        // Match Condition for Searching by _id or phoneNo
+        let matchCondition = {};
+        if (_id) {
+            matchCondition._id = mongoose.Types.ObjectId(_id);
+        } else if (phoneNo) {
+            matchCondition.phoneNo = parseFloat(phoneNo); 
+        } else {
+            return res.status(400).json({
+                success: false,
+                message: "Provide either _id or phoneNo to fetch user details",
+            });
+        }
     
-          let conditions = [
-            // Match user by _id
+        let conditions = [
             {
                 $match: matchCondition,
             },
@@ -34,7 +33,7 @@ module.exports = [
                 },
             },
             {
-                $unwind: { path: "$orders", preserveNullAndEmptyArrays: true }, // Deconstruct the orders array
+                $unwind: { path: "$orders", preserveNullAndEmptyArrays: true },
             },
             {
                 $project: {
@@ -50,7 +49,6 @@ module.exports = [
                     isDisabled: 1,
                     address: 1,
                     walletBalance: 1,
-                    // Project specific fields from orders
                     "orders.date": 1,
                     "orders.created": 1,
                     "orders._id": 1,
@@ -70,7 +68,7 @@ module.exports = [
                 },
             },
             {
-                $sort: { "orders.date": -1 }, // Sort the documents by the date field within orders array
+                $sort: { "orders.date": -1 },
             },
             {
                 $group: {
@@ -87,6 +85,14 @@ module.exports = [
                     otp: { $first: "$otp" },
                     orders: { $push: "$orders" },
                     walletBalance: { $first: "$walletBalance" },
+                },
+            },
+            {
+                $lookup: {
+                    from: "tickets",
+                    localField: "_id",
+                    foreignField: "userId",
+                    as: "tickets",
                 },
             },
             {
@@ -116,6 +122,7 @@ module.exports = [
                     isSoftDelete: 1,
                     otp: 1,
                     orders: 1,
+                    tickets: 1,
                     address: 1,
                     walletBalance: 1,
                     "referredPeople.name": 1,
@@ -138,6 +145,7 @@ module.exports = [
                     isSoftDelete: { $first: "$isSoftDelete" },
                     otp: { $first: "$otp" },
                     orders: { $first: "$orders" },
+                    tickets: { $first: "$tickets" },
                     peopleReferred: { $push: "$referredPeople" },
                     walletBalance: { $first: "$walletBalance" },
                 },
@@ -181,6 +189,7 @@ module.exports = [
                     address: 1,
                     otp: 1,
                     orders: 1,
+                    tickets: 1,
                     peopleReferred: 1,
                     walletBalance: 1,
                     "walletTransactions.id": 1,
@@ -220,6 +229,7 @@ module.exports = [
                     peopleReferred: { $first: "$peopleReferred" },
                     walletTransactions: { $push: "$walletTransactions" },
                     walletBalance: { $first: "$walletBalance" },
+                    tickets: { $first: "$tickets" },
                 },
             },
         ];
