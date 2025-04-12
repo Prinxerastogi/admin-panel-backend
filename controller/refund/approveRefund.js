@@ -25,6 +25,8 @@ const checkRequest = async (req, res, next) => {
             {
                 $set: {
                     status: "accepted",
+                    acceptedOn: new Date(),
+                    rejectedOn: null,
                 },
             }
         );

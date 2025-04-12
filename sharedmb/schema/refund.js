@@ -21,6 +21,8 @@ const refundSchema = new Schema(
         smallCartFee: { type: Boolean, default: false },
         smallCartFeeAmount: { type: Number, default: 0 },
         amountSplit: {},
+        rejectedOn: { type: Date, default: null },
+        acceptedOn: { type: Date, default: null },
     },
     {
         timestamps: true,

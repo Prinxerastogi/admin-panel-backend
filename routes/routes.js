@@ -363,7 +363,10 @@ apiRoutes.get("/order/refund", controller.refund.orderRefundList);
 apiRoutes.post("/order/refund", controller.refund.orderRefund);
 apiRoutes.post("/order/approveRefund", controller.refund.approveRefund);
 apiRoutes.get("/refund/:refundId", controller.refund.getRefundDetail);
-apiRoutes.put("/refund/:refundId/status", controller.refund.updateRefundStatus);
+apiRoutes.post(
+    "/order/updateRefundStatus",
+    controller.refund.updateRefundStatus
+);
 apiRoutes.get("/order/reviews", controller.order.reviews);
 apiRoutes.post("/v2/order/refund", controller.refund.orderRefund);
 
