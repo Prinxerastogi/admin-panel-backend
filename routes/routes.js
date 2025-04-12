@@ -249,6 +249,9 @@ apiRoutes.get("/user/details", controller.user.getUserDetail);
 
 apiRoutes.get("/user/order/list/csv", controller.user.download.userOrdercsv);
 
+// Refund list route
+apiRoutes.get("/refund/list", controller.refund.getRefundList);
+
 apiRoutes.post(
     "/productfamily/addfamily",
     controller.product.productfamily.add
@@ -358,6 +361,9 @@ apiRoutes.get("/user/payment", controller.transation.view);
 //refund
 apiRoutes.get("/order/refund", controller.refund.orderRefundList);
 apiRoutes.post("/order/refund", controller.refund.orderRefund);
+apiRoutes.post("/order/approveRefund", controller.refund.approveRefund);
+apiRoutes.get("/refund/:refundId", controller.refund.getRefundDetail);
+apiRoutes.put("/refund/:refundId/status", controller.refund.updateRefundStatus);
 apiRoutes.get("/order/reviews", controller.order.reviews);
 apiRoutes.post("/v2/order/refund", controller.refund.orderRefund);
 

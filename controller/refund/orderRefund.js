@@ -1,28 +1,5 @@
-// API 1.
-//parameter ( orderId, userId, Amount,message,type)
-// find Order From OrderId
-
-// check form refund Schema and get orderId refund value.
-
-//calculate already refundvalue.
-//refund Entry 1 amount  + refund Entry 2
-
-// if(refundvalue>=orderAmount){
-//   send Error msg (u can not refund more than order amaunt)
-//}
-
-//else{
-// create a refund transaction
-// create a refund enrty
-// add refund amount to user wallet.
-//}
-
-// API 2.get refund fromorderId
-
 let refundSchema = require("../../sharedmb/schema/refund");
-let userSchema = require("../../sharedmb/schema/user");
 let orderSchema = require("../../sharedmb/schema/order");
-let walletTransaction = require("../../sharedmb/schema/walletTransaction");
 let crud = require("../../sharedmb/models/crud");
 let mongoose = require("mongoose");
 
@@ -30,21 +7,7 @@ let findOrder = (req, res, next) => {
     let condition = [
         {
             $match: {
-                _id: mongoose.Types.ObjectId(req.body.orderId),
-                userId: mongoose.Types.ObjectId(req.body.userId),
-            },
-        },
-        {
-            $lookup: {
-                from: "users",
-                localField: "userId",
-                foreignField: "_id",
-                as: "user",
-            },
-        },
-        {
-            $unwind: {
-                path: "$user",
+                id: Number(req.body.orderId),
             },
         },
     ];
@@ -52,12 +15,13 @@ let findOrder = (req, res, next) => {
         if (err) {
             return res.status(400).json({
                 success: false,
-                message: "error occured in findOrder",
+                message: "error occurred in findOrder",
                 err,
             });
-        } else if (order && order.length > 0) {
+        } else if (order && order.length > 0 && order[0]._id) {
             req.data = {};
             req.data.order = order[0];
+            console.log("ORDER REFUND REQUESTED FOR", order[0]._id);
             next();
         } else {
             return res
@@ -66,174 +30,125 @@ let findOrder = (req, res, next) => {
         }
     });
 };
+let checkAlreadyRequestedRefund = (req, res, next) => {
+    console.log("Order found");
+    refundSchema
+        .findOne({ orderId: req.data.order._id, status: "pending" })
+        .then((refundDocument) => {
+            if (refundDocument) {
+                return res.status(201).json({
+                    success: false,
+                    message: `Refund Number #${refundDocument.id} already pending`,
+                });
+            } else next();
+        });
+};
+let calculateRefundAmount = (req, res, next) => {
+    console.log("No existing requests found");
+    let totalRefundAmount = 0;
+    let productRefunds = req.body.products;
+    let orderProducts = req.data.order.product;
 
-let checkRefundAmount = (req, res, next) => {
-    let condition = [
-        {
-            $match: {
-                orderId: mongoose.Types.ObjectId(req.body.orderId),
-            },
-        },
-        {
-            $group: {
-                _id: "$orderId",
-                totalRefundAmount: {
-                    $sum: "$amount",
-                },
-            },
-        },
-        {
-            $addFields: {
-                totalRefundAmount: {
-                    $add: ["$totalRefundAmount", Number(req.body.amount)],
-                },
-            },
-        },
-    ];
-    crud.aggregation(condition, refundSchema, (err, refundAmount) => {
-        if (err) {
-            return res.status(400).json({
-                success: false,
-                message: "error occured in findOrder",
-                err,
-            });
-        } else if (refundAmount && refundAmount.length > 0) {
-            req.data.totalRefundAmount = refundAmount[0].totalRefundAmount;
-            next();
-        } else {
-            req.data.totalRefundAmount = Number(req.body.amount);
-            next();
+    productRefunds.forEach((product) => {
+        let productId = Object.keys(product)[0];
+        let quantityToRefund = product[productId];
+        let orderProduct = orderProducts.find((p) => p.id == productId);
+
+        if (orderProduct) {
+            totalRefundAmount += orderProduct.sellPrice * quantityToRefund;
         }
     });
+    if (req.body.isDeliveryFee) {
+        totalRefundAmount += req.data.order?.deliveryCharge || 0;
+    }
+    if (req.body.isSmallCartFee) {
+        totalRefundAmount += req.data.order?.smallCartFee || 0;
+    }
+
+    req.data.totalRefundAmount = totalRefundAmount;
+    next();
 };
 
 let checkRefundAmountFromOrderAmount = (req, res, next) => {
-    if (req.data.totalRefundAmount >= req.data.order.amount) {
+    console.log("Total refundal amount calculated", req.data.totalRefundAmount);
+    if (req.data.totalRefundAmount > req.data.order.amount) {
         return res.status(201).json({
             success: false,
-            message: "you can not refund more than order amaunt",
+            message: "you cannot refund more than the order amount",
         });
     } else {
-        next();
+        if (req.body.readOnly) {
+            return res.status(200).json({
+                success: true,
+                amount: req.data.totalRefundAmount,
+                message: "Acknowledged",
+            });
+        } else next();
     }
 };
 
-let createRefundTransaction = (req, res, next) => {
-    let now = new Date().getTime();
-    let refundTransactionData = {
-        orderId: req.body.orderId,
-        userId: req.body.userId,
-        sellerId: req.data.order.sellerId,
-        transactionId: now,
-        status: "refunded", //created authorized,captured,refunded,failed
-        updatedBalance: req.data.order.user.balance + Number(req.body.amount),
-        oldBalance: req.data.order.user.balance,
-        type: req.body.type ? req.body.type : "",
-        paymentMode: "wallet",
-        amount: Number(req.body.amount),
-        credited: true,
-        debited: false,
-        created: now,
-        updated: now,
-        date: new Date(),
-        mobileNo: req.data.order.address.mobileNo
-            ? req.data.order.address.mobileNo
-            : req.data.order.user.phoneNo,
-    };
-    crud.create(
-        refundTransactionData,
-        walletTransaction,
-        (err, transactionCreated) => {
-            if (err) {
-                return res.status(400).json({
-                    success: false,
-                    message: "error occured in createRefundTransaction",
-                    err,
-                });
-            } else if (transactionCreated) {
-                req.data.transaction = transactionCreated;
-                next();
-            } else {
-                return res.status(201).json({
-                    success: false,
-                    message: "something went wrong in createRefundTransaction ",
-                });
-            }
-        }
-    );
-};
+let createRefundRequest = (req, res) => {
+    console.log("Total refundal amount verified");
+    if (
+        !req.data.order._id ||
+        !req.data.totalRefundAmount ||
+        !req.body.products ||
+        !req.body.amountSplit
+    ) {
+        return res.status(400).json({
+            success: false,
+            message: "Missing required fields",
+        });
+    }
 
-let refundEntry = (req, res, next) => {
-    let TodayDate = new Date();
-    let refundData = {
-        userId: req.body.userId,
-        amount: Number(req.body.amount),
-        type: req.body.type ? req.body.type : "orderRefund",
-        refundBy: req.decoded.id,
-        message: req.body.message,
-        orderId: req.body.orderId,
-        transactionId: req.data.transaction._id,
-        created: TodayDate,
-        updated: TodayDate,
-        date: TodayDate,
-    };
-    crud.create(refundData, refundSchema, (err, refundEntryCreated) => {
+    // Validate that amountSplit matches total refund amount
+    const totalSplitAmount =
+        (req.body.amountSplit.wallet || 0) +
+        (req.body.amountSplit.cash || 0) +
+        (req.body.amountSplit.online || 0);
+
+    if (totalSplitAmount !== req.data.totalRefundAmount) {
+        return res.status(400).json({
+            success: false,
+            message: "Amount split total must match the refund amount",
+        });
+    }
+
+    let refund = new refundSchema({
+        orderId: req.data.order._id,
+        amount: req.data.totalRefundAmount,
+        products: req.body.products,
+        amountSplit: req.body.amountSplit,
+        deliveryFee: req.body.isDeliveryFee,
+        deliveryFeeAmount: req.body.isDeliveryFee
+            ? req.data.order?.deliveryCharge
+            : 0,
+        smallCartFee: req.body.isSmallCartFee,
+        smallCartFeeAmount: req.body.isSmallCartFee
+            ? req.data.order?.smallCartFee
+            : 0,
+    });
+    refund.save((err, refund) => {
         if (err) {
             return res.status(400).json({
                 success: false,
-                message: "error occured in refundEntry",
+                message: "error occurred in createRefundRequest",
                 err,
             });
-        } else if (refundEntryCreated) {
-            req.data.refundData = refundEntryCreated;
-            next();
         } else {
-            return res.status(201).json({
-                success: false,
-                message: "something went wrong in refundEntry ",
+            return res.status(200).json({
+                success: true,
+                message: "refund request created successfully",
+                refund,
             });
         }
     });
-};
-
-let updateUserWallet = (req, res) => {
-    crud.updateOne(
-        {
-            _id: req.body.userId,
-        },
-        {
-            $inc: {
-                balance: Number(req.body.amount),
-            },
-        },
-        {},
-        userSchema,
-        (err, walletUpdated) => {
-            if (err) {
-                return res.status(400).json({
-                    success: false,
-                    message: "error occured in updateUserWallet",
-                    err,
-                });
-            } else if (walletUpdated.n > 0 && walletUpdated.nModified > 0) {
-                return res
-                    .status(200)
-                    .json({ success: true, message: "refund successfully" });
-            } else {
-                return res.status(201).json({
-                    success: false,
-                    message: "something went wrong in updateUserWallet ",
-                });
-            }
-        }
-    );
 };
 
 module.exports = [
     findOrder,
-    checkRefundAmount,
+    checkAlreadyRequestedRefund,
+    calculateRefundAmount,
     checkRefundAmountFromOrderAmount,
-    createRefundTransaction,
-    refundEntry,
-    updateUserWallet,
+    createRefundRequest,
 ];

@@ -7,6 +7,7 @@ let walletTransactionSchema = new Schema({
     orderId: { type: Schema.Types.ObjectId, ref: "orderId" },
     userId: { type: Schema.Types.ObjectId, ref: "user", index: 1 },
     sellerId: { type: Schema.Types.ObjectId, ref: "seller" },
+    refundId: { type: Schema.Types.ObjectId, unique: true },
     txnid: String,
     tempOrderId: { type: Schema.Types.ObjectId },
     transactionId: String,
