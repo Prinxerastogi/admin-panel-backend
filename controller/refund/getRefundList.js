@@ -23,6 +23,11 @@ module.exports = (req, res) => {
                 preserveNullAndEmptyArrays: true,
             },
         },
+        {
+            $sort: {
+                id: -1,
+            },
+        },
     ];
     if (req.query.page && req.query.limit) {
         let pagination = {
