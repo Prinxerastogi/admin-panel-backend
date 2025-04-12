@@ -1,24 +1,31 @@
-let mongoose = require("mongoose");
-let Schema = mongoose.Schema;
-let AutoIncrement = require("mongoose-sequence")(mongoose);
+const mongoose = require("mongoose");
+const Schema = mongoose.Schema;
+const AutoIncrement = require("mongoose-sequence")(mongoose);
 
-let refundSchema = new Schema({
-    productId: { type: Schema.Types.ObjectId, ref: "productId", index: 1 },
-    userId: { type: Schema.Types.ObjectId, ref: "user", index: 1 },
-    amount: Number,
-    type: { type: String, lowercase: true }, // orderRefund
-    refundBy: { type: Schema.Types.ObjectId, ref: "admin" },
-    message: { type: String, lowercase: true },
-    orderId: { type: Schema.Types.ObjectId, ref: "order", index: 1 },
-    transactionId: {
-        type: Schema.Types.ObjectId,
-        ref: "walletTransaction",
-        index: 1,
+const refundSchema = new Schema(
+    {
+        id: {
+            type: Number,
+            unique: true,
+        },
+        orderId: { type: Schema.Types.ObjectId, ref: "orders", index: 1 },
+        amount: Number,
+        status: {
+            type: String,
+            enum: ["pending", "approved", "rejected"],
+            default: "pending",
+        },
+        products: [{}],
+        deliveryFee: { type: Boolean, default: false },
+        deliveryFeeAmount: { type: Number, default: 0 },
+        smallCartFee: { type: Boolean, default: false },
+        smallCartFeeAmount: { type: Number, default: 0 },
+        amountSplit: {},
     },
-    created: { type: Date },
-    updated: { type: Date },
-    date: { type: Date },
-});
+    {
+        timestamps: true,
+    }
+);
 
 refundSchema.plugin(AutoIncrement, { inc_field: "id", id: "refundId" });
 module.exports = mongoose.model("refund", refundSchema);
