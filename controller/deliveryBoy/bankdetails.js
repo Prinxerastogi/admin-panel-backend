@@ -21,7 +21,7 @@ const getDetails = async (req, res, next) => {
         if (data.success) {
             return res.json({
                 success: true,
-                data: data.data.virtual_accounts[0],
+                data: data.data.virtual_accounts[1],
             });
         } else {
             return res.json({
