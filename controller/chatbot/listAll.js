@@ -51,7 +51,9 @@ module.exports = async (req, res) => {
                     _id: 1,
                     id: 1,
                     ticketStatus: 1,
+                    chatProgress: 1,
                     createdAt: 1,
+                    ticketTag: 1,
                     isOfflineCustomer: 1,
                     user: {
                         name: 1,

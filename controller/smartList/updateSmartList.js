@@ -1,16 +1,16 @@
 "use strict";
 let crudModel = require("../../sharedmb/models/crud"), // get our mongoose model
-    tagsSchema = require("../../sharedmb/schema/tags"),
+    smartListSchema = require("../../sharedmb/schema/smartList"),
     productSchema = require("../../sharedmb/schema/product"),
     utility = require("../../sharedmb/utility/utility"),
     mongoose = require("mongoose"),
     MESSAGE = require("./message");
 
-let findTag = (req, res, next) => {
+let findSmartList = (req, res, next) => {
     let conditions = {
-        _id: req.body.tag_id,
+        _id: req.body.smartlist_id,
     };
-    crudModel.findOne(conditions, tagsSchema, (err, tags) => {
+    crudModel.findOne(conditions, smartListSchema, (err, smartList) => {
         if (err) {
             return res.status(400).json({
                 error: true,
@@ -18,33 +18,57 @@ let findTag = (req, res, next) => {
                 message: MESSAGE.add.error,
                 error: err,
             });
-        } else if (tags != null) {
+        } else if (smartList != null) {
             next();
-        } else if (tags == null) {
-            // return res.status(201).json({ success: false, message: `${tags.name} already added in this tags` })
-            return res
-                .status(201)
-                .json({ success: false, message: `Tag Not Found` });
         } else {
             return res
-                .status(500)
-                .json({ success: true, message: MESSAGE.add.unknown });
+                .status(404)
+                .json({ success: false, message: `SmartList Not Found` });
         }
     });
 };
-let updatetags = (req, res) => {
+
+let updateSmartList = (req, res) => {
     let condition = {
-        _id: req.body.tag_id,
+        _id: req.body.smartlist_id,
     };
     let update = {
-        name: req.body.tag_name,
-        _name: utility.removeSpecialCharAndDash(req.body.tag_name),
-        urlkey: utility.removeSpecialCharAndDash(req.body.tag_name),
+        name: req.body.smartlist_name,
+        _name: utility.removeSpecialCharAndDash(req.body.smartlist_name),
+        urlkey: utility.removeSpecialCharAndDash(req.body.smartlist_name),
         isActive: req.body.isActive,
         updateDate: new Date(),
     };
 
-    tagsSchema.findOneAndUpdate(condition, update, (error, updated) => {
+    let config = {};
+    if (req.body.category) config.category = req.body.category;
+    if (req.body.subCategory) config.subCategory = req.body.subCategory;
+    if (req.body.leafCategory) config.leafCategory = req.body.leafCategory;
+    if (req.body.brand) config.brand = req.body.brand;
+    if (req.body.subBrand) config.subBrand = req.body.subBrand;
+    if (req.body.minPrice) config.minPrice = req.body.minPrice;
+    if (req.body.maxPrice) config.maxPrice = req.body.maxPrice;
+    if (req.body.minDiscount) config.minDiscount = req.body.minDiscount;
+    if (req.body.maxDiscount) config.maxDiscount = req.body.maxDiscount;
+    if (req.body.tags) config.tags = req.body.tags;
+
+    if (Object.keys(config).length > 0) {
+        update.config = config;
+    }
+
+    let unsetFields = {};
+    if (!req.body.category) unsetFields["config.category"] = "";
+    if (!req.body.subCategory) unsetFields["config.subCategory"] = "";
+    if (!req.body.leafCategory) unsetFields["config.leafCategory"] = "";
+    if (!req.body.brand) unsetFields["config.brand"] = "";
+    if (!req.body.subBrand) unsetFields["config.subBrand"] = "";
+    if (!req.body.minPrice) unsetFields["config.minPrice"] = "";
+    if (!req.body.maxPrice) unsetFields["config.maxPrice"] = "";
+    if (!req.body.minDiscount) unsetFields["config.minDiscount"] = "";
+    if (!req.body.maxDiscount) unsetFields["config.maxDiscount"] = "";
+    if (!req.body.tags || req.body.tags.length === 0) unsetFields["config.tags"] = "";
+
+    smartListSchema.findOneAndUpdate(condition, update, (error, updated) => {
         if (error) {
             return res.status(400).json({
                 error: true,
@@ -54,10 +78,9 @@ let updatetags = (req, res) => {
             });
         } else {
             if (req.body.products) {
-                //remove tag from all products having this tag earlier
                 productSchema.updateMany(
-                    { tags: [req.body.tag_id] },
-                    { $set: { tags: [] } },
+                    { smartList: [req.body.smartlist_id] },
+                    { $set: { smartList: [] } },
                     (error, updated) => {
                         if (error) {
                             return res.status(400).json({
@@ -70,14 +93,13 @@ let updatetags = (req, res) => {
                             req.body.products.forEach((prodId, index) => {
                                 productSchema.findOneAndUpdate(
                                     { id: Number(prodId) },
-                                    { $push: { tags: req.body.tag_id } },
+                                    { $set: { smartList: [req.body.smartlist_id] } },
                                     (error, updated) => {
                                         if (error) {
                                             return res.status(400).json({
                                                 error: true,
                                                 success: false,
-                                                message:
-                                                    MESSAGE.add.savedataError,
+                                                message: MESSAGE.add.savedataError,
                                                 error: error,
                                             });
                                         }
@@ -99,4 +121,5 @@ let updatetags = (req, res) => {
         }
     });
 };
-module.exports = [findTag, updatetags];
+
+module.exports = [findSmartList, updateSmartList];

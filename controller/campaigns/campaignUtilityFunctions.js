@@ -9,6 +9,7 @@ const creditBalanceInUserWallet = async (phoneNos, amount, campaignId) => {
 
         for (let i = 0; i < phoneNos.length; i += batchSize) {
             const batch = phoneNos.slice(i, i + batchSize);
+            console.log(batch);
             const batchResults = await Promise.allSettled(
                 batch.map((phoneNo) =>
                     creditBalance(phoneNo, amount, campaignId)
@@ -17,6 +18,7 @@ const creditBalanceInUserWallet = async (phoneNos, amount, campaignId) => {
             results.push(...batchResults);
         }
 
+        console.log(results);
         results.forEach((result) => {
             if (result.status === "rejected") {
                 console.error("Failed:", result.reason);
@@ -32,6 +34,7 @@ const creditBalance = async (phoneNo, amount, campaignId) => {
         try {
             const user = await userSchema.findOne({ phoneNo: Number(phoneNo) });
             if (!user) {
+                console.error(`User not found for phoneNo ${phoneNo}`);
                 return reject(`User not found for phoneNo ${phoneNo}`);
             }
 
@@ -118,7 +121,10 @@ const sendSMS = async (phoneNo, templateName, imgUrl, variables) => {
             url += `&messageType=image&mediaUrl=${imgUrl}`;
         }
         try {
-            const response = await axios.get(url);
+            // const response = await axios.get(url);
+            const response = {
+                data: { whatsapp_uniqueid: '{"status":"success"}' },
+            };
             console.log(response.data);
             if (
                 JSON.parse(response.data.whatsapp_uniqueid).status === "success"

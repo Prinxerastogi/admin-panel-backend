@@ -181,7 +181,7 @@ let productSchema = new Schema({
     cityIds: [],
     fssaiNo: { type: String, lowercase: true },
     // gpId: Number,
-    // gmId: Number,
+    // gmId: Number,    
     // mpId: Number,
     // mcId: Number,
     competitor: {

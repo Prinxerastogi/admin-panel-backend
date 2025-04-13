@@ -28,15 +28,16 @@ const startCampaign = async (req, res) => {
             });
             targetCustomers = parentCampaign.targetCustomers;
         }
+        console.log(campaign.type);
         if (campaign.type === "wallet") {
-            creditBalanceInUserWallet(
+            await creditBalanceInUserWallet(
                 targetCustomers,
                 campaign.amount,
                 campaign._id
             );
         } else if (campaign.type === "message") {
             // Send whatsapp message
-            sendWhatsappMessage(
+            await sendWhatsappMessage(
                 targetCustomers,
                 campaign.templateName,
                 campaign.imgUrl,

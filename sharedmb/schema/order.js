@@ -48,6 +48,7 @@ let orderSchema = new Schema(
                 barCode: { type: String, lowercase: true },
                 productFamilyId: { type: Schema.Types.ObjectId, default: null },
                 isRefund: { type: Boolean, default: false },
+                
                 outOfStock: {
                     isOutOfStock: { type: Boolean, default: false },
                     setBy: { type: Schema.Types.ObjectId, ref: "sellers" },

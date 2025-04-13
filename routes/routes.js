@@ -5,6 +5,7 @@ const path = require("path");
 const fs = require("fs");
 
 let apiRoutes = express.Router();
+const ticketController = require("../controller/chatbot/updateTicketTag");
 
 apiRoutes.get("/home", controller.home); ////not in use
 
@@ -27,6 +28,21 @@ apiRoutes.get("/getTag/:tag_id", controller.tags.getTagDetails);
 apiRoutes.get("/deleteTag/:tag_id", controller.tags.deleteTag);
 
 apiRoutes.post("/compare/product", controller.cron.compareProduct);
+
+apiRoutes.post("/createSmartList", controller.smartList.createSmartList);
+apiRoutes.put("/updateSmartList", controller.smartList.updateSmartList);
+apiRoutes.get("/smartlist", controller.smartList.smartList);
+apiRoutes.get("/getSmartList/:smartlist_id", controller.smartList.getSmartList);
+apiRoutes.get(
+    "/deleteSmartList/:smartlist_id",
+    controller.smartList.deleteSmartList
+);
+apiRoutes.get(
+    "/getSmartListProducts/:smartlist_name",
+    controller.smartList.getSmartListProducts
+);
+
+apiRoutes.get("/ratings", controller.ratings.getAllRatings);
 
 ////apiRoutes.post('/subscription/notaccepted',   controller.cronjob.refundAmountToUser)
 ////apiRoutes.post('/refundamount',               controller.cronjob.refundAmountToUser);
@@ -223,6 +239,7 @@ apiRoutes.get("/search/users", controller.user.serach);
 apiRoutes.get("/latest/users", controller.user.latestUserList);
 apiRoutes.get("/user", controller.user.view);
 apiRoutes.post("/reactivateUser", controller.user.reactivateUser);
+apiRoutes.get("/user/details", controller.user.getUserDetail);
 
 // apiRoutes.post("/adminUser", controller.user.create);
 // apiRoutes.put("/adminUser", controller.user.modify);
@@ -231,6 +248,9 @@ apiRoutes.post("/reactivateUser", controller.user.reactivateUser);
 // apiRoutes.post("/adminUser/active", controller.user.activateDeactivate);
 
 apiRoutes.get("/user/order/list/csv", controller.user.download.userOrdercsv);
+
+// Refund list route
+apiRoutes.get("/refund/list", controller.refund.getRefundList);
 
 apiRoutes.post(
     "/productfamily/addfamily",
@@ -341,6 +361,14 @@ apiRoutes.get("/user/payment", controller.transation.view);
 //refund
 apiRoutes.get("/order/refund", controller.refund.orderRefundList);
 apiRoutes.post("/order/refund", controller.refund.orderRefund);
+apiRoutes.post("/order/approveRefund", controller.refund.approveRefund);
+apiRoutes.get("/refund/:refundId", controller.refund.getRefundDetail);
+apiRoutes.post(
+    "/order/updateRefundStatus",
+    controller.refund.updateRefundStatus
+);
+apiRoutes.get("/order/reviews", controller.order.reviews);
+apiRoutes.post("/v2/order/refund", controller.refund.orderRefund);
 
 //setting
 //apiRoutes.post('/setting',                   controller.setting.add);
@@ -366,9 +394,22 @@ apiRoutes.put("/infopage/remove/image/:id", controller.info.deleteImages);
 apiRoutes.get("/chats", controller.chat.list);
 apiRoutes.get("/chat/:orderId", controller.chat.detail);
 
+apiRoutes.post(
+    "/chatbot/update-chat-progress",
+    controller.chatbot.updateChatProgress
+);
+
+apiRoutes.get("/chatbot/ticket-tags", ticketController.getTagOptions);
+apiRoutes.get(
+    "/chatbot/ticket-with-tag-options",
+    ticketController.getTicketWithTagOptions
+);
+apiRoutes.get("/chatbot/tickets-by-tag", ticketController.getTicketsByTag);
+apiRoutes.post("/chatbot/ticket-tag", ticketController.updateTicketTag);
 apiRoutes.get("/chatbot/listAll", controller.chatbot.listAll);
 apiRoutes.get("/chatbot/listTickets", controller.chatbot.listTickets);
 apiRoutes.get("/chatbot/viewTicket", controller.chatbot.viewTicket);
+apiRoutes.get("/chatbot/findByPhone", controller.chatbot.viewTicketByPhone);
 apiRoutes.post("/chatbot/resumeTicket", controller.chatbot.resumeTicket);
 apiRoutes.put("/chatbot/upload", controller.chatbot.image);
 apiRoutes.post("/chatbot/openNew", controller.chatbot.openNew);
@@ -399,7 +440,15 @@ apiRoutes.get(
     "/deliveryboy/bankaccountDetails",
     controller.deliveryBoy.bankdetails
 );
-
+apiRoutes.get("/deliveryboy/report", controller.deliveryBoy.report);
+apiRoutes.post(
+    "/deliveryboy/deductAmount",
+    controller.deliveryBoy.deductAmount
+);
+apiRoutes.post(
+    "/deliveryboy/updateRentedBike",
+    controller.deliveryBoy.updateRentedBike
+);
 apiRoutes.post("/importCsvAndUpdate", controller.product.importCsvAndUpdate);
 
 apiRoutes.post(
@@ -414,4 +463,6 @@ apiRoutes.post("/campaign/create", controller.campaigns.createCampaign);
 apiRoutes.post("/campaign/complete", controller.campaigns.completeCampaign);
 apiRoutes.post("/campaign/start", controller.campaigns.startCampaign);
 apiRoutes.post("/campaign/test", controller.campaigns.testCampaign);
+// apiRoutes.put("/updateFeatureWall/:id", controller.HomeScreen.update);
+// apiRoutes.get("/featureWall/:id", controller.HomeScreen.getFeatureWall);
 module.exports = apiRoutes;
