@@ -64,6 +64,9 @@ let calculateRefundAmount = (req, res, next) => {
     if (req.body.isSmallCartFee) {
         totalRefundAmount += req.data.order?.smallCartFee || 0;
     }
+    if (req.body.isPromocodeRefund) {
+        totalRefundAmount -= req.data.order.couponDiscount || 0;
+    }
 
     req.data.totalRefundAmount = totalRefundAmount;
     next();
