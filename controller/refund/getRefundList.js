@@ -23,12 +23,73 @@ module.exports = (req, res) => {
                 preserveNullAndEmptyArrays: true,
             },
         },
+        // Modified product IDs extraction
+        {
+            $addFields: {
+                productIds: {
+                    $map: {
+                        input: "$products",
+                        as: "prod",
+                        in: {
+                            $let: {
+                                vars: {
+                                    firstKey: { $arrayElemAt: [{ $objectToArray: "$$prod" }, 0] }
+                                },
+                                in: {
+                                    $cond: [
+                                        { $eq: [{ $type: "$$firstKey.k" }, "string"] },
+                                        { $toInt: "$$firstKey.k" },
+                                        "$$firstKey.k"
+                                    ]
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        // Safer product lookup
+        {
+            $lookup: {
+                from: "products",
+                let: { productIds: "$productIds" },
+                pipeline: [
+                    {
+                        $addFields: {
+                            idInt: {
+                                $cond: [
+                                    { $eq: [{ $type: "$id" }, "string"] },
+                                    { $toInt: "$id" },
+                                    "$id"
+                                ]
+                            }
+                        }
+                    },
+                    {
+                        $match: {
+                            $expr: { $in: ["$idInt", "$$productIds"] }
+                        }
+                    },
+                    {
+                        $project: {
+                            id: 1,
+                            name: 1,
+                            images: 1,
+                            sellPrice: 1,
+                            _id: 0
+                        }
+                    }
+                ],
+                as: "productDetails"
+            }
+        },
         {
             $sort: {
                 id: -1,
             },
         },
     ];
+
     if (req.query.page && req.query.limit) {
         let pagination = {
             page: Number(req.query.page),

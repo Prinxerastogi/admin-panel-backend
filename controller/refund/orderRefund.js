@@ -90,13 +90,14 @@ let checkRefundAmountFromOrderAmount = (req, res, next) => {
     }
 };
 
-let createRefundRequest = (req, res) => {
+let createRefundRequest = async (req, res) => {
     console.log("Total refundal amount verified");
     if (
         !req.data.order._id ||
         !req.data.totalRefundAmount ||
         !req.body.products ||
-        !req.body.amountSplit
+        !req.body.amountSplit ||
+        !req.body.refundReason
     ) {
         return res.status(400).json({
             success: false,
@@ -104,49 +105,66 @@ let createRefundRequest = (req, res) => {
         });
     }
 
-    // Validate that amountSplit matches total refund amount
     const totalSplitAmount =
         (req.body.amountSplit.wallet || 0) +
         (req.body.amountSplit.cash || 0) +
         (req.body.amountSplit.online || 0);
-
-    if (totalSplitAmount !== req.data.totalRefundAmount) {
-        return res.status(400).json({
-            success: false,
-            message: "Amount split total must match the refund amount",
-        });
-    }
-
-    let refund = new refundSchema({
-        orderId: req.data.order._id,
-        amount: req.data.totalRefundAmount,
-        products: req.body.products,
-        amountSplit: req.body.amountSplit,
-        deliveryFee: req.body.isDeliveryFee,
-        deliveryFeeAmount: req.body.isDeliveryFee
-            ? req.data.order?.deliveryCharge
-            : 0,
-        smallCartFee: req.body.isSmallCartFee,
-        smallCartFeeAmount: req.body.isSmallCartFee
-            ? req.data.order?.smallCartFee
-            : 0,
-    });
-    refund.save((err, refund) => {
-        if (err) {
+        if (totalSplitAmount !== req.data.totalRefundAmount) {
+            return res.status(400).json({
+                success: false,
+                message: "Amount split total must match the refund amount",
+            });
+        }
+    
+        try {
+            const productDetails = req.data.order.product.filter(p => 
+                req.body.products.some(refundProd => refundProd[p.id] !== undefined)
+            ).map(p => ({
+                id: p.id,
+                name: p.name,
+                images: p.images,
+                quantity: req.body.products.find(refundProd => refundProd[p.id])[p.id]
+            }));
+    
+            let refund = new refundSchema({
+                orderId: req.data.order._id,
+                amount: req.data.totalRefundAmount,
+                products: req.body.products,
+                productDetails: productDetails, 
+                amountSplit: req.body.amountSplit,
+                deliveryFee: req.body.isDeliveryFee,
+                deliveryFeeAmount: req.body.isDeliveryFee
+                    ? req.data.order?.deliveryCharge
+                    : 0,
+                smallCartFee: req.body.isSmallCartFee,
+                smallCartFeeAmount: req.body.isSmallCartFee
+                    ? req.data.order?.smallCartFee
+                    : 0,
+                refundReason: req.body.refundReason.reason, 
+                refundOtherReason: req.body.refundReason.reason === 'other' 
+                        ? req.body.refundReason.otherDetails 
+                        : null 
+            });
+    
+            const savedRefund = await refund.save();
+            
+            return res.status(200).json({
+                success: true,
+                message: "refund request created successfully",
+                refund: {
+                    ...savedRefund._doc,
+                    productDetails: productDetails // Include in response
+                }
+            });
+        } catch (err) {
             return res.status(400).json({
                 success: false,
                 message: "error occurred in createRefundRequest",
                 err,
             });
-        } else {
-            return res.status(200).json({
-                success: true,
-                message: "refund request created successfully",
-                refund,
-            });
         }
-    });
-};
+    };
+    
 
 module.exports = [
     findOrder,

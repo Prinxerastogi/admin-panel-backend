@@ -23,6 +23,11 @@ const refundSchema = new Schema(
         amountSplit: {},
         rejectedOn: { type: Date, default: null },
         acceptedOn: { type: Date, default: null },
+        refundReason: {
+            type: String,
+            enum: ['product_not_available', 'quantity_not_available', 'wrong_product', 'damaged_product', 'other'],
+        },
+        refundOtherReason: String,
     },
     {
         timestamps: true,
