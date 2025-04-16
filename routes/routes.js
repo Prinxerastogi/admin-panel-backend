@@ -208,7 +208,12 @@ apiRoutes.get("/subbrands", controller.brand.subBrands); //not is use
 apiRoutes.get("/offer/type", controller.offer.offerType);
 
 apiRoutes.get("/offer/:offerId", controller.offer.get);
+apiRoutes.post("/offers/toggle-status", controller.offer.toggleOfferStatus);
+
 apiRoutes.post("/offer", controller.offer.add);
+apiRoutes.get("/products/search", controller.offer.searchProduct);
+
+
 apiRoutes.put("/offer/:offerId", controller.offer.update);
 apiRoutes.post("/offer/active/deactive", controller.offer.activeDeactive);
 apiRoutes.get("/offergraph/:id", controller.offer.graph);
@@ -227,6 +232,7 @@ apiRoutes.get("/notification", controller.notification.get);
 apiRoutes.put("/notification", controller.notification.activeDeactive);
 
 apiRoutes.get("/issues", controller.issue.list);
+apiRoutes.post("/create/issue", controller.issue.createIssue);
 apiRoutes.get("/issue", controller.issue.view);
 apiRoutes.post("/issue/close", controller.issue.closed);
 apiRoutes.get("/issue/message", controller.issue.message.list);
