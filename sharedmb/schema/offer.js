@@ -5,7 +5,7 @@ let AutoIncrement = require("mongoose-sequence")(mongoose);
 let offerSchema = new Schema({
     name: { type: String, lowercase: true },
     sellerId: { type: Schema.Types.ObjectId },
-    promocode: { type: String, lowercase: true, unique: true }, // (unique) this should be unique check at the time of add new promocode
+    promocode: { type: String, lowercase: true, unique: true },
     isPercent: Boolean,
     discount: Number,
     minOrderPrice: Number,
@@ -23,14 +23,16 @@ let offerSchema = new Schema({
     created: Number,
     updated: Number,
     date: Date,
-    product: [
+    products: [
         {
-            productID: { type: Schema.Types.ObjectId, ref: "product" },
+            productId: { type: Schema.Types.ObjectId, ref: "product" },
             minQuantity: Number,
             maxQuantity: Number,
         },
     ],
-
+    isAppOnly: { type: Boolean, default: false },
+    isHidden: { type: Boolean, default: false },
+    minOfferProductInCart: { type: Number, default: 0 },
     //refral code
     refralAmount: {
         senderAmount: Number,
