@@ -18,11 +18,18 @@ const refundSchema = new Schema(
         products: [{}],
         deliveryFee: { type: Boolean, default: false },
         deliveryFeeAmount: { type: Number, default: 0 },
+        customAmount: { type: Number, default: 0 },
+        customAmountReason: { type: String },
         smallCartFee: { type: Boolean, default: false },
         smallCartFeeAmount: { type: Number, default: 0 },
         amountSplit: {},
         rejectedOn: { type: Date, default: null },
         acceptedOn: { type: Date, default: null },
+        refundReason: {
+            type: String,
+            enum: ['product_not_available', 'quantity_not_available', 'wrong_product', 'damaged_product', 'other'],
+        },
+        refundOtherReason: String,
     },
     {
         timestamps: true,

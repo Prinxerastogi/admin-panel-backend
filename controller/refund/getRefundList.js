@@ -23,12 +23,112 @@ module.exports = (req, res) => {
                 preserveNullAndEmptyArrays: true,
             },
         },
+        // Modified product IDs extraction
+        {
+            $addFields: {
+                productIds: {
+                    $map: {
+                        input: "$products",
+                        as: "prod",
+                        in: {
+                            $let: {
+                                vars: {
+                                    firstKey: { $arrayElemAt: [{ $objectToArray: "$$prod" }, 0] }
+                                },
+                                in: {
+                                    $cond: [
+                                        { $eq: [{ $type: "$$firstKey.k" }, "string"] },
+                                        { $toInt: "$$firstKey.k" },
+                                        "$$firstKey.k"
+                                    ]
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        {
+            $lookup: {
+                from: "products",
+                let: { productIds: "$productIds" },
+                pipeline: [
+                    {
+                        $addFields: {
+                            idInt: {
+                                $cond: [
+                                    { $eq: [{ $type: "$id" }, "string"] },
+                                    { $toInt: "$id" },
+                                    "$id"
+                                ]
+                            }
+                        }
+                    },
+                    {
+                        $match: {
+                            $expr: { $in: ["$idInt", "$$productIds"] }
+                        }
+                    },
+                    {
+                        $project: {
+                            id: 1,
+                            name: 1,
+                            images: 1,
+                            _id: 0
+                        }
+                    }
+                ],
+                as: "productDetails"
+            }
+        },
+        {
+            $addFields: {
+                productDetails: {
+                    $map: {
+                        input: "$productDetails",
+                        as: "product",
+                        in: {
+                            $mergeObjects: [
+                                "$$product",
+                                {
+                                    sellPrice: {
+                                        $let: {
+                                            vars: {
+                                                matchedProduct: {
+                                                    $arrayElemAt: [
+                                                        {
+                                                            $filter: {
+                                                                input: "$orderDetails.products",
+                                                                as: "op",
+                                                                cond: {
+                                                                    $eq: [
+                                                                        { $ifNull: [{ $toInt: "$$op.id" }, "$$op.id"] },
+                                                                        { $ifNull: [{ $toInt: "$$product.id" }, "$$product.id"] }
+                                                                    ]
+                                                                }
+                                                            }
+                                                        },
+                                                        0
+                                                    ]
+                                                }
+                                            },
+                                            in: "$$matchedProduct.sellPrice"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    }
+                }
+            }
+        },
         {
             $sort: {
                 id: -1,
             },
         },
     ];
+
     if (req.query.page && req.query.limit) {
         let pagination = {
             page: Number(req.query.page),
@@ -53,7 +153,7 @@ module.exports = (req, res) => {
                 error: err,
             });
         }
-        console.log("Refund", refundRequest);
+    
         if (refundRequest && refundRequest.length > 0) {
             return res.status(200).json({
                 success: true,
