@@ -92,32 +92,60 @@ let checkRefundAmountFromOrderAmount = (req, res, next) => {
 
 let createRefundRequest = async (req, res) => {
     console.log("Total refundal amount verified");
+    
+    // Check for required fields
+    const isCustomAmount = req.body.customAmount > 0;
+    const hasProducts = req.body.products && req.body.products.length > 0;
+    
     if (
         !req.data.order._id ||
         !req.data.totalRefundAmount ||
-        !req.body.products ||
         !req.body.amountSplit ||
-        !req.body.refundReason
+        !req.body.refundReason ||
+        (!isCustomAmount && !hasProducts)
     ) {
         return res.status(400).json({
             success: false,
             message: "Missing required fields",
+            details: {
+                missingOrderId: !req.data.order._id,
+                missingAmount: !req.data.totalRefundAmount,
+                missingAmountSplit: !req.body.amountSplit,
+                missingReason: !req.body.refundReason,
+                missingProducts: !isCustomAmount && !hasProducts
+            }
         });
     }
 
-    const totalSplitAmount =
-        (req.body.amountSplit.wallet || 0) +
-        (req.body.amountSplit.cash || 0) +
-        (req.body.amountSplit.online || 0);
-        if (totalSplitAmount !== req.data.totalRefundAmount) {
-            return res.status(400).json({
-                success: false,
-                message: "Amount split total must match the refund amount",
-            });
-        }
-    
-        try {
-            const productDetails = req.data.order.product.filter(p => 
+    const totalSplitAmount = Object.values(req.body.amountSplit).reduce(
+        (sum, amount) => sum + (Number(amount) || 0), 0
+    );
+
+    const expectedAmount = isCustomAmount 
+        ? req.body.customAmount 
+        : req.data.totalRefundAmount;
+
+    if (Math.abs(totalSplitAmount - expectedAmount) > 0.01) { 
+        return res.status(400).json({
+            success: false,
+            message: "Amount split total must match the refund amount",
+            details: {
+                totalSplitAmount,
+                expectedAmount,
+                difference: totalSplitAmount - expectedAmount
+            }
+        });
+    }
+
+    try {
+        let productDetails = [];
+        let products = [];
+        
+        if (isCustomAmount) {
+            products = [];
+        } else {
+            products = req.body.products;
+            productDetails = req.data.order.product.filter(p => 
                 req.body.products.some(refundProd => refundProd[p.id] !== undefined)
             ).map(p => ({
                 id: p.id,
@@ -125,46 +153,46 @@ let createRefundRequest = async (req, res) => {
                 images: p.images,
                 quantity: req.body.products.find(refundProd => refundProd[p.id])[p.id]
             }));
-    
-            let refund = new refundSchema({
-                orderId: req.data.order._id,
-                amount: req.data.totalRefundAmount,
-                products: req.body.products,
-                productDetails: productDetails, 
-                amountSplit: req.body.amountSplit,
-                deliveryFee: req.body.isDeliveryFee,
-                deliveryFeeAmount: req.body.isDeliveryFee
-                    ? req.data.order?.deliveryCharge
-                    : 0,
-                smallCartFee: req.body.isSmallCartFee,
-                smallCartFeeAmount: req.body.isSmallCartFee
-                    ? req.data.order?.smallCartFee
-                    : 0,
-                refundReason: req.body.refundReason.reason, 
-                refundOtherReason: req.body.refundReason.reason === 'other' 
-                        ? req.body.refundReason.otherDetails 
-                        : null 
-            });
-    
-            const savedRefund = await refund.save();
-            
-            return res.status(200).json({
-                success: true,
-                message: "refund request created successfully",
-                refund: {
-                    ...savedRefund._doc,
-                    productDetails: productDetails // Include in response
-                }
-            });
-        } catch (err) {
-            return res.status(400).json({
-                success: false,
-                message: "error occurred in createRefundRequest",
-                err,
-            });
         }
-    };
-    
+
+        let refund = new refundSchema({
+            orderId: req.data.order._id,
+            amount: expectedAmount, 
+            products: products,
+            productDetails: productDetails,
+            amountSplit: req.body.amountSplit,
+            deliveryFee: req.body.isDeliveryFee,
+            deliveryFeeAmount: req.body.isDeliveryFee
+                ? req.data.order?.deliveryCharge
+                : 0,
+            smallCartFee: req.body.isSmallCartFee,
+            smallCartFeeAmount: req.body.isSmallCartFee
+                ? req.data.order?.smallCartFee
+                : 0,
+            refundReason: req.body.refundReason.reason,
+            refundOtherReason: req.body.refundReason.reason === 'other' 
+                ? req.body.refundReason.otherDetails 
+                : null,
+            customAmount: isCustomAmount ? req.body.customAmount : 0,
+            customAmountReason: isCustomAmount ? req.body.customAmountReason : null
+        });
+
+        const savedRefund = await refund.save();
+        
+        return res.status(200).json({
+            success: true,
+            message: "Refund request created successfully",
+            refund: savedRefund
+        });
+    } catch (err) {
+        console.error("Error in createRefundRequest:", err);
+        return res.status(500).json({
+            success: false,
+            message: "Internal server error",
+            error: err.message
+        });
+    }
+};
 
 module.exports = [
     findOrder,

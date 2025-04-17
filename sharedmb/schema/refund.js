@@ -18,6 +18,8 @@ const refundSchema = new Schema(
         products: [{}],
         deliveryFee: { type: Boolean, default: false },
         deliveryFeeAmount: { type: Number, default: 0 },
+        customAmount: { type: Number, default: 0 },
+        customAmountReason: { type: String },
         smallCartFee: { type: Boolean, default: false },
         smallCartFeeAmount: { type: Number, default: 0 },
         amountSplit: {},

@@ -4,6 +4,7 @@ const userSchema = require("../../sharedmb/schema/user");
 const walletTransaction = require("../../sharedmb/schema/walletTransaction");
 const Crypto = require("crypto");
 const { default: Axios } = require("axios");
+const mongoose = require("mongoose");
 
 const checkRequest = async (req, res, next) => {
     try {
@@ -61,10 +62,48 @@ const checkRequest = async (req, res, next) => {
 const processRefund = async (req, res, next) => {
     try {
         const refund = req.data.refund;
+        const order = req.data.order;
         let walletResponse = false;
         let onlinRefund = false;
         let cashRefund = false;
+        
+        // Prepare product updates
+        const updates = {};
+        const arrayFilters = [];
+        
+        refund.products.forEach((p, index) => {
+            const productId = Object.keys(p)[0];
+            const quantity = p[productId];
+            
+            // Convert productId to Number (since that's how it's stored in order)
+            const numericProductId = Number(productId);
+            
+            // Add to array filters (using numeric comparison)
+            arrayFilters.push({
+                [`elem${index}.id`]: numericProductId  // Using 'id' field which contains the numeric product ID
+            });
+            
+            // Set update for this product
+            updates[`product.$[elem${index}].refundedQuantity`] = quantity;
+        });
 
+        // Update order with refunded quantities
+        const updateResult = await orderSchema.findByIdAndUpdate(
+            order._id,
+            {
+                $inc: { 
+                    ...updates,
+                    totalRefundedAmount: refund.amount
+                }
+            },
+            { 
+                arrayFilters: arrayFilters,
+                new: true,
+                useFindAndModify: false 
+            }
+        );
+
+        // Rest of your refund processing code...
         if (refund.amountSplit.wallet > 0) {
             walletResponse = await processWalletRefund(
                 refund.amountSplit.wallet,
@@ -104,6 +143,7 @@ const processRefund = async (req, res, next) => {
         return res.status(200).json({
             success: true,
             message: "Refund processed successfully",
+            updatedOrder: updateResult
         });
     } catch (error) {
         console.error("Error in processRefund", error);

@@ -48,7 +48,6 @@ module.exports = (req, res) => {
                 }
             }
         },
-        // Safer product lookup
         {
             $lookup: {
                 from: "products",
@@ -75,12 +74,52 @@ module.exports = (req, res) => {
                             id: 1,
                             name: 1,
                             images: 1,
-                            sellPrice: 1,
                             _id: 0
                         }
                     }
                 ],
                 as: "productDetails"
+            }
+        },
+        {
+            $addFields: {
+                productDetails: {
+                    $map: {
+                        input: "$productDetails",
+                        as: "product",
+                        in: {
+                            $mergeObjects: [
+                                "$$product",
+                                {
+                                    sellPrice: {
+                                        $let: {
+                                            vars: {
+                                                matchedProduct: {
+                                                    $arrayElemAt: [
+                                                        {
+                                                            $filter: {
+                                                                input: "$orderDetails.products",
+                                                                as: "op",
+                                                                cond: {
+                                                                    $eq: [
+                                                                        { $ifNull: [{ $toInt: "$$op.id" }, "$$op.id"] },
+                                                                        { $ifNull: [{ $toInt: "$$product.id" }, "$$product.id"] }
+                                                                    ]
+                                                                }
+                                                            }
+                                                        },
+                                                        0
+                                                    ]
+                                                }
+                                            },
+                                            in: "$$matchedProduct.sellPrice"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    }
+                }
             }
         },
         {
@@ -114,7 +153,7 @@ module.exports = (req, res) => {
                 error: err,
             });
         }
-        console.log("Refund", refundRequest);
+    
         if (refundRequest && refundRequest.length > 0) {
             return res.status(200).json({
                 success: true,

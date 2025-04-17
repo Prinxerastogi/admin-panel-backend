@@ -44,6 +44,8 @@ module.exports = [
                     "products.quantity": "$product.quantity",
                     "products.price": "$product.price",
                     "products.sellPrice": "$product.sellPrice",
+                    "products.refundedQuantity": "$product.refundedQuantity", 
+                    "products.id": "$product.id" 
                 },
             },
             {
@@ -154,8 +156,40 @@ module.exports = [
                     includeArrayIndex: "index",
                     preserveNullAndEmptyArrays: true,
                 },
+            },
+            {
+                $lookup: {
+                    from: "refunds",
+                    localField: "_id",
+                    foreignField: "orderId",
+                    as: "refunds"
+                }
+            },
+            {
+                $addFields: {
+                    "products": {
+                        $map: {
+                            input: "$products",
+                            as: "product",
+                            in: {
+                                $mergeObjects: [
+                                    "$$product",
+                                    {
+                                        refundedQuantity: "$$product.refundedQuantity",
+                                        remainingQuantity: {
+                                            $subtract: [
+                                                "$$product.quantity",
+                                                "$$product.refundedQuantity"
+                                            ]
+                                        }
+                                    }
+                                ]
+                            }
+                        }
+                    }
+                }
             }
-        );
+        ),
 
         crud.aggregation(condition, schema, (err, orders) => {
             if (err)
