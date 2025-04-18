@@ -214,7 +214,6 @@ apiRoutes.post("/offers/toggle-status", controller.offer.toggleOfferStatus);
 apiRoutes.post("/offer", controller.offer.add);
 apiRoutes.get("/products/search", controller.offer.searchProduct);
 
-
 apiRoutes.put("/offer/:offerId", controller.offer.update);
 apiRoutes.post("/offer/active/deactive", controller.offer.activeDeactive);
 apiRoutes.get("/offergraph/:id", controller.offer.graph);
@@ -470,8 +469,8 @@ apiRoutes.post("/campaign/create", controller.campaigns.createCampaign);
 apiRoutes.post("/campaign/complete", controller.campaigns.completeCampaign);
 apiRoutes.post("/campaign/start", controller.campaigns.startCampaign);
 apiRoutes.post("/campaign/test", controller.campaigns.testCampaign);
-apiRoutes.get("/orders/fields" , controller.order.getOrderFields);
-apiRoutes.post("/orders/filterFields", controller.order.getFilterOrder);
+// apiRoutes.get("/orders/fields" , controller.order.getOrderFields);
+// apiRoutes.post("/orders/filterFields", controller.order.getFilterOrder);
 // apiRoutes.put("/updateFeatureWall/:id", controller.HomeScreen.update);
 // apiRoutes.get("/featureWall/:id", controller.HomeScreen.getFeatureWall);
 module.exports = apiRoutes;
