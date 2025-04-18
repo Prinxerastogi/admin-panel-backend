@@ -92,11 +92,12 @@ apiRoutes.delete("/serveArea/delete/:id", controller.seller.servingArea.delete);
 apiRoutes.get("/subAreas", controller.seller.servingArea.getAllSubArea);
 apiRoutes.post("/assign/serveArea", controller.seller.servingArea.assign);
 
-apiRoutes.put("/admin/active/deactive", controller.admin.activeDeactive);
+apiRoutes.post("/active/deactive", controller.admin.activeDeactive);
 apiRoutes.get("/admins", controller.admin.list);
 apiRoutes.get("/admin", controller.admin.view);
 apiRoutes.put("/admin", controller.admin.update);
 apiRoutes.post("/admin", controller.admin.create);
+apiRoutes.post("/admin/changePass", controller.admin.updatePassword);
 
 apiRoutes.get("/state", controller.state.list);
 apiRoutes.post("/city", controller.city.add);
@@ -469,6 +470,8 @@ apiRoutes.post("/campaign/create", controller.campaigns.createCampaign);
 apiRoutes.post("/campaign/complete", controller.campaigns.completeCampaign);
 apiRoutes.post("/campaign/start", controller.campaigns.startCampaign);
 apiRoutes.post("/campaign/test", controller.campaigns.testCampaign);
+apiRoutes.get("/orders/fields" , controller.order.getOrderFields);
+apiRoutes.post("/orders/filterFields", controller.order.getFilterOrder);
 // apiRoutes.put("/updateFeatureWall/:id", controller.HomeScreen.update);
 // apiRoutes.get("/featureWall/:id", controller.HomeScreen.getFeatureWall);
 module.exports = apiRoutes;

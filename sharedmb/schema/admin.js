@@ -8,6 +8,7 @@ let adminSchema = new Schema({
     password: String,
     type: { type: String, lowercase: true },
     isDeleted: { type: Boolean, default: false },
+    isActive: {type: Boolean, default: true},
     created: Number,
     updated: Number,
     date: { type: Date },
