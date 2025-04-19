@@ -20,6 +20,7 @@ const HomeScreenCardSchema = new Schema({
             productId: { type: String },
             keyword: { type: String },
             productUrl: { type: String },
+            price: {type: Number},
             type: { type: String },
             width: { type: String },
             aspectRatio: { type: String },
@@ -42,6 +43,7 @@ const HomeScreenCardSchema = new Schema({
     position: Number,
     created: Number,
     updated: Number,
+    
 });
 
 module.exports = mongoose.model("HomeScreenCard", HomeScreenCardSchema);
