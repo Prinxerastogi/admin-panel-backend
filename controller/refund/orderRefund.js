@@ -67,7 +67,9 @@ let calculateRefundAmount = (req, res, next) => {
     if (req.body.isPromocodeRefund) {
         totalRefundAmount -= req.data.order.couponDiscount || 0;
     }
-
+    if (req.body.includeCustomAmount && req.body.customAmount > 0) {
+      totalRefundAmount += req.body.customAmount;
+}
     req.data.totalRefundAmount = totalRefundAmount;
     next();
 };
@@ -93,13 +95,16 @@ let checkRefundAmountFromOrderAmount = (req, res, next) => {
 let createRefundRequest = async (req, res) => {
     console.log("Total refundal amount verified");
     
+    const includeCustomAmount = req.body.includeCustomAmount || false;
     // Check for required fields
-    const isCustomAmount = req.body.customAmount > 0;
+    const isCustomAmount = req.body.customAmount > 0 ;
     const hasProducts = req.body.products && req.body.products.length > 0;
+    const customAmount = req.body.customAmount || 0;
+    const customAmountReason = req.body.customAmountReason || null;
     
     if (
         !req.data.order._id ||
-        !req.data.totalRefundAmount ||
+        (!req.data.totalRefundAmount && !isCustomAmount) ||
         !req.body.amountSplit ||
         !req.body.refundReason ||
         (!isCustomAmount && !hasProducts)
@@ -109,10 +114,10 @@ let createRefundRequest = async (req, res) => {
             message: "Missing required fields",
             details: {
                 missingOrderId: !req.data.order._id,
-                missingAmount: !req.data.totalRefundAmount,
+                missingAmount: !req.data.totalRefundAmount && !isCustomAmount,
                 missingAmountSplit: !req.body.amountSplit,
                 missingReason: !req.body.refundReason,
-                missingProducts: !isCustomAmount && !hasProducts
+                missingProducts: !isCustomAmount && !hasProducts && !includeCustomAmount,
             }
         });
     }
@@ -121,9 +126,7 @@ let createRefundRequest = async (req, res) => {
         (sum, amount) => sum + (Number(amount) || 0), 0
     );
 
-    const expectedAmount = isCustomAmount 
-        ? req.body.customAmount 
-        : req.data.totalRefundAmount;
+    const expectedAmount = req.body.totalRefundAmount || req.data.totalRefundAmount;
 
     if (Math.abs(totalSplitAmount - expectedAmount) > 0.01) { 
         return res.status(400).json({
@@ -139,8 +142,7 @@ let createRefundRequest = async (req, res) => {
 
     try {
         let productDetails = [];
-        let products = [];
-        
+        let products = []        
         if (isCustomAmount) {
             products = [];
         } else {
@@ -173,8 +175,10 @@ let createRefundRequest = async (req, res) => {
             refundOtherReason: req.body.refundReason.reason === 'other' 
                 ? req.body.refundReason.otherDetails 
                 : null,
-            customAmount: isCustomAmount ? req.body.customAmount : 0,
-            customAmountReason: isCustomAmount ? req.body.customAmountReason : null
+                includeCustomAmount: includeCustomAmount,
+                customAmount: includeCustomAmount ? customAmount : 0,
+        customAmountReason: includeCustomAmount ? customAmountReason : null,
+    
         });
 
         const savedRefund = await refund.save();
