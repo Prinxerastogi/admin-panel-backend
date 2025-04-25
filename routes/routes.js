@@ -404,6 +404,10 @@ apiRoutes.post(
     "/chatbot/update-chat-progress",
     controller.chatbot.updateChatProgress
 );
+apiRoutes.post(
+    "/chatbot/note",
+    controller.chatbot.createNote
+);
 
 apiRoutes.get("/chatbot/ticket-tags", ticketController.getTagOptions);
 apiRoutes.get(
@@ -420,6 +424,8 @@ apiRoutes.post("/chatbot/resumeTicket", controller.chatbot.resumeTicket);
 apiRoutes.put("/chatbot/upload", controller.chatbot.image);
 apiRoutes.post("/chatbot/openNew", controller.chatbot.openNew);
 apiRoutes.post("/chatbot/resolveTicket", controller.chatbot.resolveTicket);
+apiRoutes.get("/tickets/graph-data", controller.chatbot.getTicketGraphData);
+
 
 // otp limit routes
 apiRoutes.post("/otp/limit", controller.otpLimit.add);
