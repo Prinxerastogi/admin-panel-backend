@@ -9,6 +9,7 @@ const ticketController = require("../controller/chatbot/updateTicketTag");
 
 apiRoutes.get("/home", controller.home); ////not in use
 
+apiRoutes.get("/getAnomalousHomeScreenCards", controller.HomeScreen.alert);
 apiRoutes.post("/addHomeScreenCard", controller.HomeScreen.create);
 apiRoutes.post("/modifyHomeScreenCard", controller.HomeScreen.modify);
 apiRoutes.get("/listHomeScreenCard", controller.HomeScreen.list);
