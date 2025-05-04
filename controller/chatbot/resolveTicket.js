@@ -11,6 +11,7 @@ const markResolved = async (req, res, next) => {
                 resolution: req.body?.message,
                 isUnread: false,
                 chatProgress: "closed",
+                resolutionTime: new Date(), 
             },
         },
         {},

@@ -52,6 +52,7 @@ module.exports = async (req, res) => {
                     id: 1,
                     ticketStatus: 1,
                     chatProgress: 1,
+                    note: 1,
                     createdAt: 1,
                     ticketTag: 1,
                     isOfflineCustomer: 1,

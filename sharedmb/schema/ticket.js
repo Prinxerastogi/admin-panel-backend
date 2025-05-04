@@ -1,7 +1,9 @@
+
+
+
 let mongoose = require("mongoose");
 let Schema = mongoose.Schema;
 let AutoIncrement = require("mongoose-sequence")(mongoose);
-
 let ticketSchema = new Schema(
     {
         userId: { type: Schema.Types.ObjectId, ref: "user" },
@@ -20,6 +22,7 @@ let ticketSchema = new Schema(
                 ],
                 date: { type: Date, default: Date.now },
                 images: [String],
+                isFirstCustomMessage: { type: Boolean, default: false },
             },
         ],
         id: {
@@ -31,6 +34,10 @@ let ticketSchema = new Schema(
         },
         ticketTag: { type: String, default: null },
         chatProgress: { type: String, default: "active" },
+        note: {
+            type: String,
+            default: null,
+        },
         isUnread: {
             type: Boolean,
             default: false,
@@ -42,13 +49,14 @@ let ticketSchema = new Schema(
         resolution: {
             type: String,
         },
+        resolutionTime: {
+            type: Date,
+        },
     },
     { timestamps: true }
 );
-
 ticketSchema.plugin(AutoIncrement, {
     inc_field: "id",
     id: "ticketId",
 });
-
 module.exports = mongoose.model("ticket", ticketSchema);

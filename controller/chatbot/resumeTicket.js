@@ -1,3 +1,5 @@
+
+
 "use strict";
 let crudModel = require("../../sharedmb/models/crud"),
     ticketSchema = require("../../sharedmb/schema/ticket"),
@@ -16,8 +18,11 @@ const findTicket = async (req, res, next) => {
                     error: err,
                 });
             } else {
-                if (ticket?.ticketStatus === "open") next();
-                else
+                if (ticket?.ticketStatus === "open") {
+                    req.isFirstCustomMessage =
+                        req.body.isCustomMessage && !ticket.firstMessageTime;
+                    next();
+                } else
                     return res.status(400).json({
                         error: true,
                         success: false,
@@ -27,22 +32,28 @@ const findTicket = async (req, res, next) => {
         }
     );
 };
+
 const pushMessage = async (req, res, next) => {
-    crudModel.findOneAndUpdate(
-        { _id: mongoose.Types.ObjectId(req.body.ticketId) },
-        {
-            $push: {
-                chats: {
-                    source: "server",
-                    message: req.body.message,
-                },
-            },
-            $set: {
-                isUnread: true,
-                isConnected: true,
-                chatProgress: "active",
+    let updateObj = {
+        $push: {
+            chats: {
+                source: "server",
+                message: req.body.message,
+                isFirstCustomMessage: req.isFirstCustomMessage || false,
             },
         },
+        $set: {
+            isUnread: true,
+            isConnected: true,
+            chatProgress: "active",
+        },
+    };
+
+  
+
+    crudModel.findOneAndUpdate(
+        { _id: mongoose.Types.ObjectId(req.body.ticketId) },
+        updateObj,
         {},
         ticketSchema,
         (err, order) => {
@@ -57,6 +68,7 @@ const pushMessage = async (req, res, next) => {
         }
     );
 };
+
 const returnUpdatedTicket = async (req, res) => {
     crudModel.findOne(
         { _id: mongoose.Types.ObjectId(req.body.ticketId) },
@@ -75,9 +87,11 @@ const returnUpdatedTicket = async (req, res) => {
                     success: true,
                     message: "Ticket reverted",
                     ticket: ticket,
+                    isFirstCustomMessage: req.isFirstCustomMessage || false,
                 });
             }
         }
     );
 };
+
 module.exports = [findTicket, pushMessage, returnUpdatedTicket];
