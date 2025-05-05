@@ -19,8 +19,6 @@ const findTicket = async (req, res, next) => {
                 });
             } else {
                 if (ticket?.ticketStatus === "open") {
-                    req.isFirstCustomMessage =
-                        req.body.isCustomMessage && !ticket.firstMessageTime;
                     next();
                 } else
                     return res.status(400).json({
@@ -39,7 +37,7 @@ const pushMessage = async (req, res, next) => {
             chats: {
                 source: "server",
                 message: req.body.message,
-                isFirstCustomMessage: req.isFirstCustomMessage || false,
+                isCustomMessage: true,
             },
         },
         $set: {
@@ -87,7 +85,7 @@ const returnUpdatedTicket = async (req, res) => {
                     success: true,
                     message: "Ticket reverted",
                     ticket: ticket,
-                    isFirstCustomMessage: req.isFirstCustomMessage || false,
+                    isCustomMessage:true,
                 });
             }
         }
