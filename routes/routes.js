@@ -1,13 +1,46 @@
 let express = require("express");
 let controller = require("../controller");
+const productGroupSchema = require("../sharedmb/schema/productGroup");
 const config = require("config");
 const path = require("path");
 const fs = require("fs");
 
 let apiRoutes = express.Router();
 const ticketController = require("../controller/chatbot/updateTicketTag");
-
+const { groupArray } = require("./groupIt");
 apiRoutes.get("/home", controller.home); ////not in use
+apiRoutes.get("/bulkWrite", async (req, res) => {
+    try {
+        if (!Array.isArray(groupArray)) {
+            return res.status(400).json({
+                success: false,
+                message: "Invalid groupArray format",
+            });
+        }
+
+        const createGroupPromises = groupArray.map((prod) => {
+            if (prod.length > 1)
+                return productGroupSchema.create({
+                    products: prod.map((item) => item.id),
+                });
+        });
+
+        const results = await Promise.all(createGroupPromises);
+
+        res.status(200).json({
+            success: true,
+            message: "All product groups created successfully",
+            data: results,
+        });
+    } catch (error) {
+        console.error("Error in bulk write:", error);
+        res.status(500).json({
+            success: false,
+            message: "Error processing bulk write",
+            error: error.message,
+        });
+    }
+});
 
 apiRoutes.get("/getAnomalousHomeScreenCards", controller.HomeScreen.alert);
 apiRoutes.post("/addHomeScreenCard", controller.HomeScreen.create);
@@ -405,10 +438,7 @@ apiRoutes.post(
     "/chatbot/update-chat-progress",
     controller.chatbot.updateChatProgress
 );
-apiRoutes.post(
-    "/chatbot/note",
-    controller.chatbot.createNote
-);
+apiRoutes.post("/chatbot/note", controller.chatbot.createNote);
 
 apiRoutes.get("/chatbot/ticket-tags", ticketController.getTagOptions);
 apiRoutes.get(
@@ -426,7 +456,6 @@ apiRoutes.put("/chatbot/upload", controller.chatbot.image);
 apiRoutes.post("/chatbot/openNew", controller.chatbot.openNew);
 apiRoutes.post("/chatbot/resolveTicket", controller.chatbot.resolveTicket);
 apiRoutes.get("/tickets/graph-data", controller.chatbot.getTicketGraphData);
-
 
 // otp limit routes
 apiRoutes.post("/otp/limit", controller.otpLimit.add);
@@ -480,4 +509,12 @@ apiRoutes.post("/campaign/test", controller.campaigns.testCampaign);
 // apiRoutes.post("/orders/filterFields", controller.order.getFilterOrder);
 // apiRoutes.put("/updateFeatureWall/:id", controller.HomeScreen.update);
 // apiRoutes.get("/featureWall/:id", controller.HomeScreen.getFeatureWall);
+
+// Product Group Routes
+apiRoutes.post("/product-groups", controller.productGroup.create);
+apiRoutes.get("/product-groups", controller.productGroup.list);
+apiRoutes.get("/product-groups/:id", controller.productGroup.getById);
+apiRoutes.put("/product-groups/:id", controller.productGroup.update);
+apiRoutes.get("/product-groups/delete/:id", controller.productGroup.delete);
+
 module.exports = apiRoutes;
