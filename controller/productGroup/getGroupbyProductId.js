@@ -11,7 +11,7 @@ const getGroupbyProductId = (req, res) => {
         {
             $match: {
               products: {
-                $in: [494]
+                $in: [productid]
               }
             }
           },
