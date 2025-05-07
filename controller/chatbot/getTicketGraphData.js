@@ -1,5 +1,3 @@
-
-
 "use strict";
 const Ticket = require("../../sharedmb/schema/ticket");
 const moment = require("moment");
@@ -11,7 +9,9 @@ const getTicketGraphData = async (req, res) => {
             : moment().startOf("day");
 
         // End of the same day
-        const endOfDay = moment(selectedDate).endOf("day");
+        const endOfDay = req.query.endDate
+            ? moment(req.query.endDate).endOf("day")
+            : moment().endOf("day");
 
         // Find tickets created on the selected date
         const tickets = await Ticket.find({
