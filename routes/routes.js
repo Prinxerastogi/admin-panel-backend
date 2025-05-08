@@ -517,4 +517,13 @@ apiRoutes.get("/product-groups/:id", controller.productGroup.getById);
 apiRoutes.put("/product-groups/:id", controller.productGroup.update);
 apiRoutes.get("/product-groups/delete/:id", controller.productGroup.delete);
 
+
+apiRoutes.get("/product-groups/groupByProductId/:productid", controller.productGroup.getGroupbyProductId);
+
+apiRoutes.get("/product-groups/addProductToGroup/:productid/:groupid", controller.productGroup.addProductToGroup);
+
+apiRoutes.get("/product-groups/removeProductFromGroup/:productid/:groupid", controller.productGroup.removeProductfromGroup);
+
+
+
 module.exports = apiRoutes;
