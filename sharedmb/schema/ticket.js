@@ -22,7 +22,7 @@ let ticketSchema = new Schema(
                 ],
                 date: { type: Date, default: Date.now },
                 images: [String],
-                isFirstCustomMessage: { type: Boolean, default: false },
+                isCustomMessage: { type: Boolean, default: false },
             },
         ],
         id: {

@@ -43,7 +43,7 @@ const getTicketGraphData = async (req, res) => {
                 const firstCustomerMessage = ticket.chats.find(
                     (chat) =>
                         chat.source === "server" &&
-                        chat.isFirstCustomMessage === true
+                        chat.isCustomMessage === true
                 );
 
                 if (firstCustomerMessage && firstCustomerMessage.date) {
