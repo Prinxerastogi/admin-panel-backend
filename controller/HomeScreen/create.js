@@ -69,9 +69,16 @@ module.exports = [
                 created,
                 updated,
                 date,
+                featureImage,
+                gridImages,
+                featureWallContainerStyles,
+                featureWallStyles,
+                featureImageResizeMode,
+                featureImageStyles
             } = req.body;
 
             let data = {};
+            
             if (type === "category") {
                 data = {
                     type,
@@ -82,6 +89,7 @@ module.exports = [
                     updated: new Date().getTime(),
                 };
             }
+            
             if (type === "product") {
                 data = {
                     type,
@@ -92,6 +100,7 @@ module.exports = [
                     updated: new Date().getTime(),
                 };
             }
+            
             if (type === "gif") {
                 data = {
                     type,
@@ -102,6 +111,7 @@ module.exports = [
                     updated: new Date().getTime(),
                 };
             }
+            
             if (
                 type === "horizontalbanner" ||
                 type === "verticalbanner" ||
@@ -116,8 +126,26 @@ module.exports = [
                     updated: new Date().getTime(),
                 };
             }
+
+            if (type === "featurewall") {
+                data = {
+                    type,
+                    title,
+                    featureImage,
+                    gridImages,
+                    featureWallContainerStyles,
+                    featureWallStyles,
+                   featureImageResizeMode ,
+                    featureImageStyles,
+                    position,
+                    created: new Date().getTime(),
+                    updated: new Date().getTime(),
+                };
+            }
+
             const result = await HomeScreenCard.create(data);
             deleteHomePageRedisCache();
+            
             res.status(200).json({
                 message: "HomeScreenCard created successfully",
                 data: result,

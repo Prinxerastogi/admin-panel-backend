@@ -2,7 +2,7 @@ let mongoose = require("mongoose");
 let Schema = mongoose.Schema;
 
 const HomeScreenCardSchema = new Schema({
-    type: { type: String, lowercase: true }, // HorizontalBanner, VerticalBanner, Category, Product, Gif
+    type: { type: String, lowercase: true }, // HorizontalBanner,featureWall , VerticalBanner, Category, Product, Gif
     title: { type: String, lowercase: true },
     categories: [
         {
@@ -37,13 +37,32 @@ const HomeScreenCardSchema = new Schema({
     ],
     gifUrl: { type: String },
 
-    featureImage: { type: String }, // Single image URL
+    featureImage: { type: String },
+    gridImages: [{
+        url: { type: String },
+        mainImage: { type: Boolean, default: false },
+        keyword: { type: String },
+        type: { type: String }, 
+        productId: { type: mongoose.Schema.Types.Mixed }, 
+        width: { type: Number },
+        aspect_ratio: { type: Number },
+        heightAdjust: { type: Number, default: 0 },
+        featureWallCardStyles: {}
+    }],
+    
+    featureWallContainerStyles: {},
+    
+    featureWallStyles: {},
+    
+    featureImageResizeMode: { type: String },
+    
+    featureImageStyles: {},
+
     name: { type: String, lowercase: true },
     isDeleted: { type: Boolean, default: false },
     position: Number,
     created: Number,
     updated: Number,
-    
 });
 
 module.exports = mongoose.model("HomeScreenCard", HomeScreenCardSchema);
