@@ -17,6 +17,12 @@ const uploadImage = async (req, res, next) => {
         let tempImages = req.body.image
             ?.filter((image) => image.tempimgUrl)
             ?.map((image) => image.tempimgUrl);
+
+        req.body.gridImages.forEach((image) => {
+            if (image.tempimgUrl) {
+                tempImages.push(image.tempimgUrl);
+            }
+        });
         let dstPath = `${config.upload.banner}`;
 
         await fs.ensureDir(dstPath);
