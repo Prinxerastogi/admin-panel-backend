@@ -11,18 +11,21 @@ const {
 
 const uploadImage = async (req, res, next) => {
     try {
-        if (!req.body.image) {
+        if (!req.body.image && !req.body.gridImages) {
             return next();
         }
-        let tempImages = req.body.image
-            ?.filter((image) => image.tempimgUrl)
-            ?.map((image) => image.tempimgUrl);
+        let tempImages = [];
+        if (req.body.image)
+            req.body.image
+                ?.filter((image) => image.tempimgUrl)
+                ?.map((image) => image.tempimgUrl);
 
-        req.body.gridImages.forEach((image) => {
-            if (image.tempimgUrl) {
-                tempImages.push(image.tempimgUrl);
-            }
-        });
+        if (req.body.gridImages && req.body.gridImages.length > 0)
+            req.body.gridImages.forEach((image) => {
+                if (image.tempimgUrl) {
+                    tempImages.push(image.tempimgUrl);
+                }
+            });
         let dstPath = `${config.upload.banner}`;
 
         await fs.ensureDir(dstPath);
