@@ -189,6 +189,49 @@ const getPopularProductCards = async (req, res, next) => {
         next();
     });
 };
+
+const getFeatureWallCards = async (req, res, next) => {
+    let pipeline = [
+        {
+            $match: {
+                isDeleted: false,
+                type: "featurewall",
+            },
+        },
+        {
+            $project: {
+                type: 1,
+                title: 1,
+                position: 1,
+                created: 1,
+                updated: 1,
+                deviceType: 1,
+                featureImage: 1,
+                gridImages: 1,
+                featureWallContainerStyles: 1,
+                featureWallStyles: 1,
+                featureImageResizeMode: 1,
+                featureImageStyles: 1,
+            },
+        },
+        { $sort: { position: 1 } },
+    ];
+
+    crudModel.aggregation(pipeline, HomeScreenCard, async (err, cards) => {
+        if (err)
+            return res.status(400).json({
+                error: true,
+                success: false,
+                message: "error occured in findFeatureWallCards",
+                err,
+            });
+        else if (cards) {
+            req.data.cards = [...req.data.cards, ...cards];
+        }
+        next();
+    });
+};
+
 const getSvgCards = async (req, res, next) => {
     let pipeline = [
         {
@@ -256,9 +299,8 @@ const getProductCards = async (req, res) => {
 
         if (cards) {
             req.data.cards = [...req.data.cards, ...cards];
-            // next()
-        } else {
         }
+        
         let cardsArr = req.data.cards;
         cardsArr.sort((a, b) => a.position - b.position);
         return res
@@ -271,6 +313,7 @@ module.exports = [
     getCategoryCards,
     getBannerCards,
     getPopularProductCards,
+    getFeatureWallCards, 
     getSvgCards,
     getProductCards,
 ];
