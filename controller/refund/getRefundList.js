@@ -7,8 +7,23 @@ const order = require("../../sharedmb/schema/order");
 module.exports = (req, res) => {
     let currentUser = req.decoded;
     let userId = currentUser.id;
+    const page = Math.max(0, parseInt(req.query.page) || 0);
+    const limit = Math.min(100, Math.max(1, parseInt(req.query.limit) || 10)); // Max 100 items per page
+    const skip = page * limit;
+    
     let condition = [
         { $match: {} },
+        
+        {
+            $sort: {
+                createdAt: -1,  
+                _id: -1      
+            },
+        },
+        
+        { $skip: skip },
+        { $limit: limit },
+        
         {
             $lookup: {
                 from: "orders",
@@ -23,7 +38,7 @@ module.exports = (req, res) => {
                 preserveNullAndEmptyArrays: true,
             },
         },
-        // Modified product IDs extraction
+        
         {
             $addFields: {
                 productIds: {
@@ -48,6 +63,7 @@ module.exports = (req, res) => {
                 }
             }
         },
+        
         {
             $lookup: {
                 from: "products",
@@ -81,6 +97,7 @@ module.exports = (req, res) => {
                 as: "productDetails"
             }
         },
+        
         {
             $addFields: {
                 productDetails: {
@@ -121,29 +138,9 @@ module.exports = (req, res) => {
                     }
                 }
             }
-        },
-        {
-            $sort: {
-                id: -1,
-            },
-        },
+        }
     ];
 
-    if (req.query.page && req.query.limit) {
-        let pagination = {
-            page: Number(req.query.page),
-            limit: Number(req.query.limit),
-        };
-        let paginate = [
-            {
-                $skip: pagination.page * pagination.limit,
-            },
-            {
-                $limit: pagination.limit,
-            },
-        ];
-        condition = [...condition, ...paginate];
-    }
     crudModel.aggregation(condition, refundSchema, (err, refundRequest) => {
         if (err) {
             return res.status(400).json({
@@ -157,7 +154,7 @@ module.exports = (req, res) => {
         if (refundRequest && refundRequest.length > 0) {
             return res.status(200).json({
                 success: true,
-                message: ` ${refundRequest.length} requests found`,
+                message: `${refundRequest.length} requests found`,
                 requests: refundRequest,
             });
         } else {

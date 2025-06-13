@@ -44,6 +44,7 @@
         "express-validation": "^1.0.2",
         "fast-csv": "^5.0.2",
         "find-remove": "^2.0.1",
+        "firebase-admin": "^13.4.0",
         "fs": "0.0.1-security",
         "fs-extra": "^6.0.1",
         "gm": "^1.23.1",
@@ -81,5 +82,6 @@
         "uid": "^1.0.0",
         "underscore": "^1.10.2",
         "winston": "^2.4.2"
-    }
+    },
+    "packageManager": "pnpm@9.15.4+sha512.b2dc20e2fc72b3e18848459b37359a32064663e5627a51e4c74b2c29dd8e8e0491483c3abb40789cfd578bf362fb6ba8261b05f0387d76792ed6e23ea3b1b6a0"
 }

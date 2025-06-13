@@ -11,6 +11,22 @@ let emailRegex =
 let randomize = require("randomatic");
 let MailChecker = require("mailchecker");
 let AWS = require("aws-sdk");
+const admin = require("firebase-admin");
+// Your Firebase service account key
+
+// Initialize FCM if not already
+if (!admin.apps.length) {
+    try {
+        const serviceAccount = require("../../aapkabazar-app-firebase-adminsdk-4xnqb-770a960037.json");
+        admin.initializeApp({
+            credential: admin.credential.cert(serviceAccount),
+        });
+    } catch (err) {
+        console.warn(
+            "Firebase credentials not loaded. Running without Firebase."
+        );
+    }
+}
 
 module.exports.isEmail = (userId) => {
     return emailRegex.test(userId);
@@ -204,4 +220,8 @@ module.exports.sendAWSSESEmail = (payload, callback) => {
             else callback(null, response);
         }
     );
+};
+
+module.exports.sendNotification = (payload) => {
+    return admin.messaging().send(payload);
 };
