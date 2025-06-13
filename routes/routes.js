@@ -8,6 +8,8 @@ const fs = require("fs");
 let apiRoutes = express.Router();
 const ticketController = require("../controller/chatbot/updateTicketTag");
 const { groupArray } = require("./groupIt");
+
+apiRoutes.post("/github/webhook", controller.github.webhook);
 apiRoutes.get("/", (req, res) => {
     return res.status(200).json({
         success: true,
