@@ -16,7 +16,7 @@ const uploadImage = async (req, res, next) => {
         }
         let tempImages = [];
         if (req.body.image)
-            req.body.image
+            tempImages = req.body.image
                 ?.filter((image) => image.tempimgUrl)
                 ?.map((image) => image.tempimgUrl);
 

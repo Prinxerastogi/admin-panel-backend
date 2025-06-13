@@ -12,9 +12,18 @@ const uploadImage = async (req, res, next) => {
     try {
         if (!req.body.image) return next();
 
-        let tempImages = req.body.image
-            .filter((image) => image.tempimgUrl)
-            .map((image) => image.tempimgUrl);
+        let tempImages = [];
+        if (req.body.image) {
+            tempImages = req.body.image
+                .filter((image) => image.tempimgUrl)
+                .map((image) => image.tempimgUrl);
+        }
+        if (req.body.gridImages && req.body.gridImages.length > 0)
+            req.body.gridImages.forEach((image) => {
+                if (image.tempimgUrl) {
+                    tempImages.push(image.tempimgUrl);
+                }
+            });
         let dstPath = `${config.upload.banner}`;
 
         await fs.ensureDir(dstPath);
@@ -74,11 +83,11 @@ module.exports = [
                 featureWallContainerStyles,
                 featureWallStyles,
                 featureImageResizeMode,
-                featureImageStyles
+                featureImageStyles,
             } = req.body;
 
             let data = {};
-            
+
             if (type === "category") {
                 data = {
                     type,
@@ -89,7 +98,7 @@ module.exports = [
                     updated: new Date().getTime(),
                 };
             }
-            
+
             if (type === "product") {
                 data = {
                     type,
@@ -100,7 +109,7 @@ module.exports = [
                     updated: new Date().getTime(),
                 };
             }
-            
+
             if (type === "gif") {
                 data = {
                     type,
@@ -111,7 +120,7 @@ module.exports = [
                     updated: new Date().getTime(),
                 };
             }
-            
+
             if (
                 type === "horizontalbanner" ||
                 type === "verticalbanner" ||
@@ -135,7 +144,7 @@ module.exports = [
                     gridImages,
                     featureWallContainerStyles,
                     featureWallStyles,
-                   featureImageResizeMode ,
+                    featureImageResizeMode,
                     featureImageStyles,
                     position,
                     created: new Date().getTime(),
@@ -145,7 +154,7 @@ module.exports = [
 
             const result = await HomeScreenCard.create(data);
             deleteHomePageRedisCache();
-            
+
             res.status(200).json({
                 message: "HomeScreenCard created successfully",
                 data: result,
