@@ -226,23 +226,29 @@ let createProduct = (req, res, next) => {
             : null,
         isParent: req.body.isParent,
     };
-    crud.create(insert, productSchema, (err, created) => {
-        if (err)
+
+    const newProd = new productSchema(insert);
+    newProd
+        .save()
+        .then((created) => {
+            if (created) {
+                req.data = {};
+                req.data.product = created;
+                next();
+            } else {
+                return res.status(201).json({
+                    success: false,
+                    message: `something went wrong`,
+                });
+            }
+        })
+        .catch((err) => {
             return res.status(400).json({
                 success: false,
                 message: "error occured in product craetion",
                 err,
             });
-        else if (created) {
-            req.data = {};
-            req.data.product = created;
-            next();
-        } else {
-            return res
-                .status(201)
-                .json({ success: false, message: `something went wrong` });
-        }
-    });
+        });
 };
 
 let copyImageFromTempToServer = (req, res, next) => {
