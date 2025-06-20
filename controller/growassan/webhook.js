@@ -1,11 +1,14 @@
 const webhookSchema = require("../../sharedmb/schema/webhook");
 
-const main = (req, res, next) => {
+const main = async (req, res, next) => {
     try {
         const webhook = new webhookSchema({
             data: req.body,
         });
 
+        await webhook.save()
+
+        console.log(webhook)
         if (!webhook) {
             throw Error("CANNOT SAVE WEBhook");
         }

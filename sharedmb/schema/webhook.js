@@ -5,4 +5,4 @@ const webhookSchema = new Schema({
     data: {},
 });
 
-module.exports = mongoose.model("webhooks", webhookSchema);
+module.exports = mongoose.model("webhook", webhookSchema);

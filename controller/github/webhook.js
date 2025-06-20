@@ -1,7 +1,7 @@
 const { sendNotification } = require("../../sharedmb/utility/utility");
 
 const FCM_DEVICE_TOKEN =
-    "dYBoPb5oDE5KgvNdnFqnCK:APA91bE7uxFQM12l7gsaXq9bbHVB1Sm1tb7NzTPQ5CMsfsiJMBSgv7moJBE4Lc3qHyb2rhiY12TLWdw2UjwbDEsQWlJ3jZLmjJZb-oaMftvALc1mcePaKwc";
+    "dYBoPb5oDE5KgvNdnFqnCK:APA91bGqgmC_xSOW3ITYpnibKf6Z6iMEuOtoLZMSgOHo0QTw-99F-H0OEPP2NfZZ68CYcYb-KlsQslsqHEcWInt181UCMQ-Jo6mLvtCzCbxroBOKVzONx4Y";
 
 module.exports = async (req, res, next) => {
     try {
