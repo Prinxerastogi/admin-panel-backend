@@ -68,8 +68,8 @@ let calculateRefundAmount = (req, res, next) => {
         totalRefundAmount -= req.data.order.couponDiscount || 0;
     }
     if (req.body.includeCustomAmount && req.body.customAmount > 0) {
-      totalRefundAmount += req.body.customAmount;
-}
+        totalRefundAmount += req.body.customAmount;
+    }
     req.data.totalRefundAmount = totalRefundAmount;
     next();
 };
@@ -94,14 +94,14 @@ let checkRefundAmountFromOrderAmount = (req, res, next) => {
 
 let createRefundRequest = async (req, res) => {
     console.log("Total refundal amount verified");
-    
+
     const includeCustomAmount = req.body.includeCustomAmount || false;
     // Check for required fields
-    const isCustomAmount = req.body.customAmount > 0 ;
+    const isCustomAmount = req.body.customAmount > 0;
     const hasProducts = req.body.products && req.body.products.length > 0;
     const customAmount = req.body.customAmount || 0;
     const customAmountReason = req.body.customAmountReason || null;
-    
+
     if (
         !req.data.order._id ||
         (!req.data.totalRefundAmount && !isCustomAmount) ||
@@ -117,52 +117,65 @@ let createRefundRequest = async (req, res) => {
                 missingAmount: !req.data.totalRefundAmount && !isCustomAmount,
                 missingAmountSplit: !req.body.amountSplit,
                 missingReason: !req.body.refundReason,
-                missingProducts: !isCustomAmount && !hasProducts && !includeCustomAmount,
-            }
+                missingProducts:
+                    !isCustomAmount && !hasProducts && !includeCustomAmount,
+            },
         });
     }
 
     const totalSplitAmount = Object.values(req.body.amountSplit).reduce(
-        (sum, amount) => sum + (Number(amount) || 0), 0
+        (sum, amount) => sum + (Number(amount) || 0),
+        0
     );
 
-    const expectedAmount = req.body.totalRefundAmount || req.data.totalRefundAmount;
+    const expectedAmount =
+        req.body.totalRefundAmount || req.data.totalRefundAmount;
 
-    if (Math.abs(totalSplitAmount - expectedAmount) > 0.01) { 
+    if (Math.abs(totalSplitAmount - expectedAmount) > 0.01) {
         return res.status(400).json({
             success: false,
             message: "Amount split total must match the refund amount",
             details: {
                 totalSplitAmount,
                 expectedAmount,
-                difference: totalSplitAmount - expectedAmount
-            }
+                difference: totalSplitAmount - expectedAmount,
+            },
         });
     }
 
     try {
         let productDetails = [];
-        let products = []        
+        let products = [];
         if (isCustomAmount) {
             products = [];
         } else {
             products = req.body.products;
-            productDetails = req.data.order.product.filter(p => 
-                req.body.products.some(refundProd => refundProd[p.id] !== undefined)
-            ).map(p => ({
-                id: p.id,
-                name: p.name,
-                images: p.images,
-                quantity: req.body.products.find(refundProd => refundProd[p.id])[p.id]
-            }));
+            productDetails = req.data.order.product
+                .filter((p) =>
+                    req.body.products.some(
+                        (refundProd) => refundProd[p.id] !== undefined
+                    )
+                )
+                .map((p) => ({
+                    id: p.id,
+                    name: p.name,
+                    images: p.images,
+                    quantity: req.body.products.find(
+                        (refundProd) => refundProd[p.id]
+                    )[p.id],
+                }));
         }
 
         let refund = new refundSchema({
             orderId: req.data.order._id,
-            amount: expectedAmount, 
+            amount: expectedAmount,
             products: products,
             productDetails: productDetails,
             amountSplit: req.body.amountSplit,
+            refundBreakdown: Object.keys(req.body.amountSplit).map((mode) => ({
+                mode,
+                status: "pending",
+            })),
             deliveryFee: req.body.isDeliveryFee,
             deliveryFeeAmount: req.body.isDeliveryFee
                 ? req.data.order?.deliveryCharge
@@ -172,28 +185,28 @@ let createRefundRequest = async (req, res) => {
                 ? req.data.order?.smallCartFee
                 : 0,
             refundReason: req.body.refundReason.reason,
-            refundOtherReason: req.body.refundReason.reason === 'other' 
-                ? req.body.refundReason.otherDetails 
-                : null,
-                includeCustomAmount: includeCustomAmount,
-                customAmount: includeCustomAmount ? customAmount : 0,
-        customAmountReason: includeCustomAmount ? customAmountReason : null,
-    
+            refundOtherReason:
+                req.body.refundReason.reason === "other"
+                    ? req.body.refundReason.otherDetails
+                    : null,
+            includeCustomAmount: includeCustomAmount,
+            customAmount: includeCustomAmount ? customAmount : 0,
+            customAmountReason: includeCustomAmount ? customAmountReason : null,
         });
 
         const savedRefund = await refund.save();
-        
+
         return res.status(200).json({
             success: true,
             message: "Refund request created successfully",
-            refund: savedRefund
+            refund: savedRefund,
         });
     } catch (err) {
         console.error("Error in createRefundRequest:", err);
         return res.status(500).json({
             success: false,
             message: "Internal server error",
-            error: err.message
+            error: err.message,
         });
     }
 };

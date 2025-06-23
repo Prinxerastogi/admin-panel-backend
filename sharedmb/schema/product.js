@@ -20,7 +20,7 @@ let productSchema = new Schema({
     lShortDesc: { type: String, lowercase: true },
     price: Number, // it is the price-per-litre  or price-per-bottle or price-per-newspaper
     unit: String, // it can be Litre or 1 newspaper or 1 bottle
-    categoryId: { type: Schema.Types.ObjectId },
+    categoryId: { type: Schema.Types.ObjectId, index: true },
     categories: [Schema.Types.ObjectId], //this shoud be array//change to categoryIds
     rating: Number,
     gst: Number,
@@ -272,5 +272,6 @@ stream.on("error", function (err) {
 });
 
 mongoose.set("useCreateIndex", true);
+productSchema.index({ tags: 1 });
 productSchema.index({ _id: -1, id: -1 });
 module.exports = mongoose.model("product", productSchema);
