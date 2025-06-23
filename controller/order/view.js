@@ -44,8 +44,8 @@ module.exports = [
                     "products.quantity": "$product.quantity",
                     "products.price": "$product.price",
                     "products.sellPrice": "$product.sellPrice",
-                    "products.refundedQuantity": "$product.refundedQuantity", 
-                    "products.id": "$product.id" 
+                    "products.refundedQuantity": "$product.refundedQuantity",
+                    "products.id": "$product.id",
                 },
             },
             {
@@ -114,6 +114,9 @@ module.exports = [
                     deliveryTime: {
                         $first: "$deliveryTime",
                     },
+                    paymentMethod: {
+                        $first: "$easeBuzzResponse.mode",
+                    },
                 },
             },
             {
@@ -162,12 +165,12 @@ module.exports = [
                     from: "refunds",
                     localField: "_id",
                     foreignField: "orderId",
-                    as: "refunds"
-                }
+                    as: "refunds",
+                },
             },
             {
                 $addFields: {
-                    "products": {
+                    products: {
                         $map: {
                             input: "$products",
                             as: "product",
@@ -175,36 +178,36 @@ module.exports = [
                                 $mergeObjects: [
                                     "$$product",
                                     {
-                                        refundedQuantity: "$$product.refundedQuantity",
+                                        refundedQuantity:
+                                            "$$product.refundedQuantity",
                                         remainingQuantity: {
                                             $subtract: [
                                                 "$$product.quantity",
-                                                "$$product.refundedQuantity"
-                                            ]
-                                        }
-                                    }
-                                ]
-                            }
-                        }
-                    }
-                }
+                                                "$$product.refundedQuantity",
+                                            ],
+                                        },
+                                    },
+                                ],
+                            },
+                        },
+                    },
+                },
             }
         ),
-
-        crud.aggregation(condition, schema, (err, orders) => {
-            if (err)
+            crud.aggregation(condition, schema, (err, orders) => {
+                if (err)
+                    return res
+                        .status(400)
+                        .json({ message: "error occured in orderlist", err });
+                else if (orders && orders.length > 0)
+                    return res.status(200).json({
+                        success: true,
+                        message: "list found",
+                        order: orders[0],
+                    });
                 return res
-                    .status(400)
-                    .json({ message: "error occured in orderlist", err });
-            else if (orders && orders.length > 0)
-                return res.status(200).json({
-                    success: true,
-                    message: "list found",
-                    order: orders[0],
-                });
-            return res
-                .status(201)
-                .json({ success: false, message: "order list  not found" });
-        });
+                    .status(201)
+                    .json({ success: false, message: "order list  not found" });
+            });
     },
 ];

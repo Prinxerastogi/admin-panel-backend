@@ -5,9 +5,14 @@ const walletTransaction = require("../../sharedmb/schema/walletTransaction");
 const Crypto = require("crypto");
 const { default: Axios } = require("axios");
 const mongoose = require("mongoose");
+const { errorlog, successlog } = require("../../sharedmb/utility/logger");
 
 const checkRequest = async (req, res, next) => {
     try {
+        if (!process.env.key || !process.env.salt) {
+            throw new Error("Missing Easebuzz credentials");
+        }
+
         const { refundRequestId } = req.body;
         req.data = {};
 
@@ -51,7 +56,7 @@ const checkRequest = async (req, res, next) => {
         req.data.order = order;
         next();
     } catch (error) {
-        console.error("Error in checkRequest", error);
+        errorlog.error("Error in checkRequest", error);
         return res.status(500).json({
             success: false,
             message: "Internal server error",
@@ -64,25 +69,25 @@ const processRefund = async (req, res, next) => {
         const refund = req.data.refund;
         const order = req.data.order;
         let walletResponse = false;
-        let onlinRefund = false;
+        let onlineRefund = false;
         let cashRefund = false;
-        
+
         // Prepare product updates
         const updates = {};
         const arrayFilters = [];
-        
+
         refund.products.forEach((p, index) => {
             const productId = Object.keys(p)[0];
             const quantity = p[productId];
-            
+
             // Convert productId to Number (since that's how it's stored in order)
             const numericProductId = Number(productId);
-            
+
             // Add to array filters (using numeric comparison)
             arrayFilters.push({
-                [`elem${index}.id`]: numericProductId  // Using 'id' field which contains the numeric product ID
+                [`elem${index}.id`]: numericProductId, // Using 'id' field which contains the numeric product ID
             });
-            
+
             // Set update for this product
             updates[`product.$[elem${index}].refundedQuantity`] = quantity;
         });
@@ -91,15 +96,15 @@ const processRefund = async (req, res, next) => {
         const updateResult = await orderSchema.findByIdAndUpdate(
             order._id,
             {
-                $inc: { 
+                $inc: {
                     ...updates,
-                    totalRefundedAmount: refund.amount
-                }
+                    totalRefundedAmount: refund.amount,
+                },
             },
-            { 
+            {
                 arrayFilters: arrayFilters,
                 new: true,
-                useFindAndModify: false 
+                useFindAndModify: false,
             }
         );
 
@@ -112,7 +117,7 @@ const processRefund = async (req, res, next) => {
             );
         }
         if (refund.amountSplit.online > 0) {
-            onlinRefund = await processEasebuzzRefund(
+            onlineRefund = await processEasebuzzRefund(
                 refund.amountSplit.online,
                 req.data.order,
                 refund._id
@@ -125,15 +130,15 @@ const processRefund = async (req, res, next) => {
             );
         }
 
-        const allSucceeded =
-            [walletResponse, onlinRefund, cashRefund].filter(Boolean).length ===
-            [
-                refund.amountSplit.wallet,
-                refund.amountSplit.online,
-                refund.amountSplit.cash,
-            ].filter((v) => v > 0).length;
+        const expectedMethods = Object.entries(refund.amountSplit).filter(
+            ([, value]) => value > 0
+        ).length;
 
-        if (!allSucceeded) {
+        const successCount = [walletResponse, onlineRefund, cashRefund].filter(
+            Boolean
+        ).length;
+
+        if (successCount !== expectedMethods) {
             return res.status(500).json({
                 success: false,
                 message: "Some or all refund methods failed",
@@ -143,10 +148,10 @@ const processRefund = async (req, res, next) => {
         return res.status(200).json({
             success: true,
             message: "Refund processed successfully",
-            updatedOrder: updateResult
+            updatedOrder: updateResult,
         });
     } catch (error) {
-        console.error("Error in processRefund", error);
+        errorlog.error("Error in processRefund", error);
         return res.status(500).json({
             success: false,
             message: "Internal server error",
@@ -155,72 +160,174 @@ const processRefund = async (req, res, next) => {
 };
 
 const processWalletRefund = async (amount, order, refundId) => {
+    const session = await mongoose.startSession();
+
     try {
-        const transaction = await walletTransaction.create({
-            orderId: order._id,
-            userId: order.userId,
-            sellerId: order.sellerId,
-            refundId: refundId,
-            status: "success",
-            type: "credit",
-            amount: amount,
-            created: Date.now(),
-            updated: Date.now(),
-            date: new Date(),
-            message: `refund for Order ${order.id}`,
+        let result = false;
+
+        await session.withTransaction(async () => {
+            // Step 1: Create wallet transaction
+            const transaction = await walletTransaction.create(
+                [
+                    {
+                        orderId: order._id,
+                        userId: order.userId,
+                        sellerId: order.sellerId,
+                        refundId: refundId,
+                        status: "success",
+                        type: "credit",
+                        amount: amount,
+                        created: Date.now(),
+                        updated: Date.now(),
+                        date: new Date(),
+                        message: `refund for Order ${order.id}`,
+                    },
+                ],
+                { session }
+            );
+            if (!transaction?.[0])
+                throw new Error("Wallet transaction creation failed");
+
+            // Step 2: Update user's wallet balance
+            const user = await userSchema.findOneAndUpdate(
+                { _id: order.userId },
+                { $inc: { walletBalance: amount } },
+                { session }
+            );
+            if (!user) throw new Error("User not found");
+
+            // Step 3: Final refund update
+            const finalRefundUpdate = await refundSchema.findOneAndUpdate(
+                {
+                    _id: refundId,
+                    "refundBreakdown.mode": "wallet",
+                    "refundBreakdown.status": "pending",
+                },
+                {
+                    $set: {
+                        status: "success",
+                        walletTransactionId: transaction[0]._id,
+                        "refundBreakdown.$.status": "success",
+                    },
+                },
+                { session }
+            );
+            if (!finalRefundUpdate)
+                throw new Error("Final refund update failed");
+
+            result = true;
         });
 
-        if (!transaction) {
-            throw new Error("Transaction creation failed");
-        }
-
-        const user = await userSchema.findOneAndUpdate(
-            { _id: order.userId },
-            {
-                $inc: {
-                    walletBalance: amount,
-                },
-            }
-        );
-        if (!user) {
-            throw new Error("User not found");
-        }
-
-        const refund = await refundSchema.findOneAndUpdate(
-            { _id: refundId },
-            {
-                $set: {
-                    status: "success",
-                    walletTransactionId: transaction._id,
-                },
-            }
-        );
-        if (!refund) {
-            throw new Error("Refund update failed");
-        }
-
-        return true;
+        return result;
     } catch (error) {
-        console.error("Error in processWalletRefund", error);
+        errorlog.error("Error in processWalletRefund", error);
         return false;
+    } finally {
+        session.endSession();
     }
 };
 
 const processEasebuzzRefund = async (amount, order, refundId) => {
     try {
+        const easebuzzData = order.easeBuzzResponse;
         if (
-            !order.easeBuzzResponse ||
-            order.easeBuzzResponse.status !== "success" ||
-            !order.easeBuzzResponse.easepayid ||
+            !easebuzzData ||
+            easebuzzData.status !== "success" ||
+            !easebuzzData.easepayid ||
             !order.paymentSource.easeBuzz ||
             order.paymentSource.easeBuzz < amount ||
             order.paymentSource.easeBuzz < 0
         ) {
-            console.error("Invalid order data for Easebuzz refund");
+            errorlog.error("Invalid order data for Easebuzz refund");
             return false;
         }
 
-        const toHash = `${process.env.key}|${refundId}|${order.easeBuzzResponse.easepayid}|${amount}|${process.env.salt}`;
+        const refundUpdate = await refundSchema.findOneAndUpdate(
+            {
+                _id: mongoose.Types.ObjectId(refundId),
+                "refundBreakdown.mode": "online",
+                "refundBreakdown.status": "pending",
+            },
+            {
+                $set: {
+                    "refundBreakdown.$.status": "processing",
+                },
+            }
+        );
+
+        if (!refundUpdate) {
+            return false;
+        }
+
+        let response = null;
+        if (easebuzzData.mode === "UPI" && easebuzzData.upi_va) {
+            response = await processExpressRefund(
+                easebuzzData,
+                amount,
+                order.id,
+                refundId
+            );
+        } else {
+            response = await processNormalRefund(
+                refundId,
+                easebuzzData.easepayid,
+                amount
+            );
+        }
+
+        if (response.success) {
+            await refundSchema.findOneAndUpdate(
+                {
+                    _id: mongoose.Types.ObjectId(refundId),
+                    "refundBreakdown.mode": "online",
+                    "refundBreakdown.status": "processing",
+                },
+                {
+                    $set: {
+                        "refundBreakdown.$.status": "success",
+                        status: "success",
+                        easebuzzResponse: response.data || null,
+                    },
+                }
+            );
+            return true;
+        } else {
+            await refundSchema.findOneAndUpdate(
+                {
+                    _id: mongoose.Types.ObjectId(refundId),
+                    "refundBreakdown.mode": "online",
+                    "refundBreakdown.status": "processing",
+                },
+                {
+                    $set: {
+                        "refundBreakdown.$.status": "failed",
+                        easebuzzResponse: response.data,
+                    },
+                }
+            );
+            return false;
+        }
+    } catch (error) {
+        await refundSchema.findOneAndUpdate(
+            {
+                _id: mongoose.Types.ObjectId(refundId),
+                "refundBreakdown.mode": "online",
+                "refundBreakdown.status": "processing",
+            },
+            {
+                $set: {
+                    "refundBreakdown.$.status": "failed",
+                    easebuzzResponse: null,
+                },
+            }
+        );
+        return false;
+    }
+};
+
+const processNormalRefund = async (refundId, easepayid, amount) => {
+    try {
+        const toHash = `${process.env.key}|${refundId}|${easepayid}|${amount}|${process.env.salt}`;
         const hash = Crypto.createHash("sha512").update(toHash).digest("hex");
 
         const options = {
@@ -233,7 +340,7 @@ const processEasebuzzRefund = async (amount, order, refundId) => {
             data: {
                 key: process.env.key,
                 merchant_refund_id: refundId,
-                easebuzz_id: order.easeBuzzResponse.easepayid,
+                easebuzz_id: easepayid,
                 refund_amount: amount,
                 hash: hash,
             },
@@ -242,27 +349,71 @@ const processEasebuzzRefund = async (amount, order, refundId) => {
         const { data } = await Axios.request(options);
 
         if (!data.status) {
-            console.error("Easebuzz refund failed", data);
-            return false;
+            errorlog.error("Easebuzz refund failed", data);
+            return { success: false, message: "UNABLE TO REFUND", data: data };
         }
 
-        const refund = await refundSchema.findOneAndUpdate(
-            { _id: refundId },
-            {
-                $set: {
-                    status: "success",
-                    easebuzzResponse: data,
-                },
-            }
-        );
-        if (!refund) {
-            console.error("Refund update failed");
-            return false;
-        }
-        return true;
+        return { success: true, message: "REFUND SUCCESS", data: data };
     } catch (error) {
-        console.error("Error in processEasebuzzRefund", error);
-        return false;
+        errorlog.error("Easebuzz refund failed", error);
+        return { success: false, message: "SERVER ERROR", data: null };
+    }
+};
+
+const processExpressRefund = async (
+    easeBuzzData,
+    amount,
+    orderId,
+    refundId
+) => {
+    try {
+        const toHash = `${process.env.wireKey}|||${easeBuzzData.upi_va}|REFUND${easeBuzzData.easepayid}|${amount}|${process.env.wireSalt}`;
+        const hashed = Crypto.createHash("sha512").update(toHash).digest("hex");
+        const options = {
+            method: "POST",
+            url: "https://wire.easebuzz.in/api/v1/quick_transfers/initiate/",
+            headers: {
+                Authorization: hashed,
+                "WIRE-API-KEY": process.env.wireKey,
+                "Content-Type": "application/json",
+                Accept: "application/json",
+            },
+            data: {
+                key: process.env.wireKey,
+                virtual_account_number: process.env.virtualAccountNo,
+                beneficiary_type: "upi",
+                beneficiary_name: easeBuzzData.firstName,
+                upi_handle: easeBuzzData.upi_va,
+                unique_request_number: `REFUND${easeBuzzData.easepayid}`,
+                payment_mode: "UPI",
+                amount: amount,
+                email: easeBuzzData.email,
+                phone: easeBuzzData.phone,
+                narration: `Refund for order id ${orderId}`,
+                udf1: "refund_upi",
+                udf2: refundId,
+                udf3: amount,
+            },
+        };
+
+        const { data } = await Axios.request(options);
+        if (data.success) {
+            return { success: true, message: "Refund Processed", data: data };
+        } else {
+            errorlog.error(
+                "easebuzz transfer failed",
+                JSON.stringify(data, null, 2)
+            );
+            return {
+                success: false,
+                message:
+                    data.data?.transfer_request?.failure_reason || "FAILED",
+                data: data,
+            };
+        }
+    } catch (error) {
+        errorlog.error("error in processing express refund", error);
+        return { success: false, message: "SERVER ERROR", data: null };
     }
 };
 
@@ -282,7 +433,7 @@ const processCodRefund = async (amount, refundId) => {
         }
         return true;
     } catch (error) {
-        console.error("Error in processCodRefund", error);
+        errorlog.error("Error in processCodRefund", error);
         return false;
     }
 };
