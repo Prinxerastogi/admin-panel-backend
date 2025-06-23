@@ -17,6 +17,7 @@ jobs:
                   username: ${{ secrets.SSH_USER }}
                   key: ${{ secrets.SSH_KEY }}
                   script: |
+                      source ~/.nvm/nvm.sh
                       cd /var/www/html/apiV2/Admin_api
                       git pull origin main
                       npm install
