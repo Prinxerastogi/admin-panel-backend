@@ -230,6 +230,7 @@ let orderSchema = new Schema(
         previousProducts: [],
         nthOrder: { type: Number, default: 0 },
         smallCartFee: { type: Number, default: 0 },
+        totalRefundedAmount: {type: Number}
     },
     {
         toObject: { getters: true, setters: true },

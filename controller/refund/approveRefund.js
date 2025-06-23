@@ -110,6 +110,7 @@ const processRefund = async (req, res, next) => {
 
         // Rest of your refund processing code...
         if (refund.amountSplit.wallet > 0) {
+            successlog.info("processing wallet refund" + refund.amountSplit.wallet + " " + refund._id)
             walletResponse = await processWalletRefund(
                 refund.amountSplit.wallet,
                 req.data.order,
@@ -117,6 +118,7 @@ const processRefund = async (req, res, next) => {
             );
         }
         if (refund.amountSplit.online > 0) {
+            successlog.info("processing online refund" + refund.amountSplit.online + " " + refund._id)
             onlineRefund = await processEasebuzzRefund(
                 refund.amountSplit.online,
                 req.data.order,
@@ -124,6 +126,7 @@ const processRefund = async (req, res, next) => {
             );
         }
         if (refund.amountSplit.cash > 0) {
+            successlog.info("processing cod refund" + refund.amountSplit.online + " " + refund._id)
             cashRefund = await processCodRefund(
                 refund.amountSplit.cash,
                 refund._id
@@ -139,6 +142,7 @@ const processRefund = async (req, res, next) => {
         ).length;
 
         if (successCount !== expectedMethods) {
+            errorlog.error("Some or all refund methods failed")
             return res.status(500).json({
                 success: false,
                 message: "Some or all refund methods failed",
@@ -207,10 +211,10 @@ const processWalletRefund = async (amount, order, refundId) => {
                     $set: {
                         status: "success",
                         walletTransactionId: transaction[0]._id,
-                        "refundBreakdown.$.status": "success",
+                        "refundBreakdown.$[elem].status": "success",
                     },
                 },
-                { session }
+                { session, arrayFilters: [{ "elem.mode": "wallet", "elem.status": "pending" }] }
             );
             if (!finalRefundUpdate)
                 throw new Error("Final refund update failed");
@@ -230,13 +234,14 @@ const processWalletRefund = async (amount, order, refundId) => {
 const processEasebuzzRefund = async (amount, order, refundId) => {
     try {
         const easebuzzData = order.easeBuzzResponse;
+        const easebuzzAmount = parseFloat(order.paymentSource.easeBuzz)
         if (
             !easebuzzData ||
             easebuzzData.status !== "success" ||
             !easebuzzData.easepayid ||
-            !order.paymentSource.easeBuzz ||
-            order.paymentSource.easeBuzz < amount ||
-            order.paymentSource.easeBuzz < 0
+            !easebuzzAmount ||
+            easebuzzAmount < amount ||
+            easebuzzAmount < 0
         ) {
             errorlog.error("Invalid order data for Easebuzz refund");
             return false;
@@ -250,17 +255,21 @@ const processEasebuzzRefund = async (amount, order, refundId) => {
             },
             {
                 $set: {
-                    "refundBreakdown.$.status": "processing",
+                    "refundBreakdown.$[elem].status": "processing",
                 },
+            },
+            {
+                arrayFilters: [{ "elem.mode": "online", "elem.status": "pending" }]
             }
         );
 
         if (!refundUpdate) {
+            errorlog.error("unable to process easebuzz refund , cannot update")
             return false;
         }
 
         let response = null;
-        if (easebuzzData.mode === "UPI" && easebuzzData.upi_va) {
+        if (easebuzzData.mode === "UPI" && easebuzzData.upi_va && false) {
             response = await processExpressRefund(
                 easebuzzData,
                 amount,
@@ -275,8 +284,10 @@ const processEasebuzzRefund = async (amount, order, refundId) => {
             );
         }
 
+        successlog.info(response)
+
         if (response.success) {
-            await refundSchema.findOneAndUpdate(
+            await refundSchema.updateOne(
                 {
                     _id: mongoose.Types.ObjectId(refundId),
                     "refundBreakdown.mode": "online",
@@ -284,15 +295,18 @@ const processEasebuzzRefund = async (amount, order, refundId) => {
                 },
                 {
                     $set: {
-                        "refundBreakdown.$.status": "success",
+                        "refundBreakdown.$[elem].status": "success",
                         status: "success",
                         easebuzzResponse: response.data || null,
                     },
+                },
+                {
+                    arrayFilters: [{ "elem.mode": "online", "elem.status": "processing" }]
                 }
             );
             return true;
         } else {
-            await refundSchema.findOneAndUpdate(
+            await refundSchema.updateOne(
                 {
                     _id: mongoose.Types.ObjectId(refundId),
                     "refundBreakdown.mode": "online",
@@ -300,9 +314,12 @@ const processEasebuzzRefund = async (amount, order, refundId) => {
                 },
                 {
                     $set: {
-                        "refundBreakdown.$.status": "failed",
+                        "refundBreakdown.$[elem].status": "failed",
                         easebuzzResponse: response.data,
                     },
+                },
+                {
+                    arrayFilters: [{ "elem.mode": "online", "elem.status": "processing" }]
                 }
             );
             return false;
@@ -316,9 +333,12 @@ const processEasebuzzRefund = async (amount, order, refundId) => {
             },
             {
                 $set: {
-                    "refundBreakdown.$.status": "failed",
+                    "refundBreakdown.$[elem].status": "failed",
                     easebuzzResponse: null,
                 },
+            },
+            {
+                arrayFilters: [{ "elem.mode": "online", "elem.status": "processing" }]
             }
         );
         return false;
@@ -396,7 +416,14 @@ const processExpressRefund = async (
             },
         };
 
-        const { data } = await Axios.request(options);
+        const response = await Axios.request(options);
+        console.log({
+            status: response.status,
+            statusText: response.statusText,
+            headers: response.headers,
+            data: response.data,
+        });
+        const data = response.data
         if (data.success) {
             return { success: true, message: "Refund Processed", data: data };
         } else {
