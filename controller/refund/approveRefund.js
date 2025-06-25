@@ -269,7 +269,7 @@ const processEasebuzzRefund = async (amount, order, refundId) => {
         }
 
         let response = null;
-        if (easebuzzData.mode === "UPI" && easebuzzData.upi_va && false) {
+        if (easebuzzData.mode === "UPI" && easebuzzData.upi_va) {
             response = await processExpressRefund(
                 easebuzzData,
                 amount,
@@ -402,7 +402,7 @@ const processExpressRefund = async (
                 key: process.env.wireKey,
                 virtual_account_number: process.env.virtualAccountNo,
                 beneficiary_type: "upi",
-                beneficiary_name: easeBuzzData.firstName,
+                beneficiary_name: String(easeBuzzData.firstName) || "UNNAMED",
                 upi_handle: easeBuzzData.upi_va,
                 unique_request_number: `REFUND${easeBuzzData.easepayid}`,
                 payment_mode: "UPI",
@@ -410,9 +410,9 @@ const processExpressRefund = async (
                 email: easeBuzzData.email,
                 phone: easeBuzzData.phone,
                 narration: `Refund for order id ${orderId}`,
-                udf1: "refund_upi",
-                udf2: refundId,
-                udf3: amount,
+                udf1: "upiRefund",
+                udf2: String(refundId),
+                udf3: String(amount),
             },
         };
 
