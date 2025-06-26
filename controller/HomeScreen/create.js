@@ -25,17 +25,17 @@ const uploadImage = async (req, res, next) => {
                 }   
             });
             if (req.body.featureImage) {
-            tempImages.push(req.body.featureImage);
+            tempImages.push(req.body.tempFeatureImage);
         } 
         
         if (req.body.featureWallStyles.image) {
-            tempImages.push(req.body.featureWallStyles.image);
+            tempImages.push(req.body.featureWallStyles.tempFeatureWallImage);
         } 
         let dstPath = `${config.upload.banner}`;
 
         await fs.ensureDir(dstPath);
 
-        await Promise.all(
+        await Promise.all( 
             tempImages.map(async (image) => {
                 let srcPath = `${config.upload.tempPath}${image}`;
                 let dstFilePath = `${dstPath}${image}`;
