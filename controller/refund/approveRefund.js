@@ -412,7 +412,7 @@ const processExpressRefund = async (
                 narration: `Refund for order id ${orderId}`,
                 udf1: "upiRefund",
                 udf2: String(refundId),
-                udf3: String(amount),
+                udf3: String(amount*100),
             },
         };
 
