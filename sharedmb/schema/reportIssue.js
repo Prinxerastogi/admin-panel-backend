@@ -3,7 +3,7 @@ let Schema = mongoose.Schema;
 let AutoIncrement = require("mongoose-sequence")(mongoose);
 
 let reportIssueSchema = new Schema({
-    orderId: { type: Schema.Types.ObjectId, ref: "order", index: 1 },
+    orderId: {type:Number},
     productId: [],
     description: { type: String, lowercase: true },
     userId: { type: Schema.Types.ObjectId, ref: "user", index: 1 },
