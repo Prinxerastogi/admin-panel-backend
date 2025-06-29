@@ -32,7 +32,7 @@ const createIssue = async (req, res) => {
             type: type || "general",
         };
 
-        if (orderId) issueData.orderId = mongoose.Types.ObjectId(orderId);
+        if (orderId) issueData.orderId =orderId;
         if (productId)
             issueData.productId = Array.isArray(productId)
                 ? productId
@@ -46,7 +46,6 @@ const createIssue = async (req, res) => {
 
         const populatedIssue = await ReportIssue.findById(newIssue._id)
             .populate("userId", null, "users")
-            .populate("orderId", null, "orders")
             .lean();
 
         return res.status(201).json({

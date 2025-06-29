@@ -4,6 +4,7 @@ const productGroupSchema = require("../sharedmb/schema/productGroup");
 const config = require("config");
 const path = require("path");
 const fs = require("fs");
+const {deleteChatMessage,editChatMessage}= require("../controller/chatbot/editDelete")
 
 let apiRoutes = express.Router();
 const ticketController = require("../controller/chatbot/updateTicketTag");
@@ -462,6 +463,8 @@ apiRoutes.get("/chatbot/listTickets", controller.chatbot.listTickets);
 apiRoutes.get("/chatbot/viewTicket", controller.chatbot.viewTicket);
 apiRoutes.get("/chatbot/findByPhone", controller.chatbot.viewTicketByPhone);
 apiRoutes.post("/chatbot/resumeTicket", controller.chatbot.resumeTicket);
+apiRoutes.post("/chatbot/delete",deleteChatMessage)
+apiRoutes.post("/chatbot/edit",editChatMessage)
 apiRoutes.put("/chatbot/upload", controller.chatbot.image);
 apiRoutes.post("/chatbot/openNew", controller.chatbot.openNew);
 apiRoutes.post("/chatbot/resolveTicket", controller.chatbot.resolveTicket);

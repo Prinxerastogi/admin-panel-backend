@@ -1,6 +1,3 @@
-
-
-
 let mongoose = require("mongoose");
 let Schema = mongoose.Schema;
 let AutoIncrement = require("mongoose-sequence")(mongoose);
@@ -23,6 +20,8 @@ let ticketSchema = new Schema(
                 date: { type: Date, default: Date.now },
                 images: [String],
                 isCustomMessage: { type: Boolean, default: false },
+                isDeleted: { type: Boolean, default: false },
+                isEdited: { type: Boolean, default: false },  
             },
         ],
         id: {
