@@ -6,64 +6,44 @@ const validation = require("./validation");
 
 const getGroupbyProductId = (req, res) => {
     const productid = Number(req.params.productid);
+    const groupType = req.query.type;
 
     const condition = [
         {
             $match: {
-              products: {
-                $in: [productid]
-              }
+                products: { $in: [productid] },
+                ...(groupType && { type: groupType }) 
             }
-          },
-          {
-            $unwind:
-              /**
-               * path: Path to the array field.
-               * includeArrayIndex: Optional name for index.
-               * preserveNullAndEmptyArrays: Optional
-               *   toggle to unwind null and empty values.
-               */
-              {
+        },
+        {
+            $unwind: {
                 path: "$products"
-              }
-          },
-          {
-            $lookup: {
-              from: "products",
-              localField: "products",
-              foreignField: "id",
-              as: "result"
             }
-          },
-          {
-            $unwind:
-              /**
-               * path: Path to the array field.
-               * includeArrayIndex: Optional name for index.
-               * preserveNullAndEmptyArrays: Optional
-               *   toggle to unwind null and empty values.
-               */
-              {
+        },
+        {
+            $lookup: {
+                from: "products",
+                localField: "products",
+                foreignField: "id",
+                as: "result"
+            }
+        },
+        {
+            $unwind: {
                 path: "$result"
-              }
-          },
-          {
-            $group:
-              /**
-               * _id: The id of the group.
-               * fieldN: The first field name.
-               */
-              {
+            }
+        },
+        {
+            $group: {
                 _id: "$_id",
                 products: {
-                  $push: "$result"
+                    $push: "$result"
                 },
                 groupId: {
-                  $first: "$id"
+                    $first: "$id"
                 }
-              }
-          }
-    
+            }
+        }
     ];
 
     crudModel.aggregation(condition, productGroupSchema, (err, group) => {
@@ -77,15 +57,17 @@ const getGroupbyProductId = (req, res) => {
         if (!group || group.length === 0) {
             return res.status(404).json({
                 success: false,
-                message: "Product group not found",
+                message: groupType 
+                    ? `No matching product group found of type '${groupType}'`
+                    : "Product group not found",
             });
         }
         return res.status(200).json({
             success: true,
             message: "Product group retrieved successfully",
-            data: group[0],
+            data: group[0], 
         });
     });
 };
 
-module.exports = [ getGroupbyProductId ];
+module.exports = [getGroupbyProductId];

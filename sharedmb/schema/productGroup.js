@@ -6,6 +6,7 @@ const productGroupSchema = new Schema({
     name: { type: String, lowercase: true },
     id: { type: Number, unique: true },
     products: [{ type: Number, index: true }],
+    type:{}
 });
 productGroupSchema.plugin(AutoIncrement, {
     inc_field: "id",
