@@ -2,7 +2,7 @@ const crudModel = require("../../sharedmb/models/crud");
 const productGroupSchema = require("../../sharedmb/schema/productGroup");
 const productSchema = require("../../sharedmb/schema/product");
 const mongoose = require("mongoose");
-const validate = require("express-validation");
+const validate = require("express-validation"); 
 const validation = require("./validation");
 
 const createProductGroup = async (req, res) => {
@@ -10,9 +10,16 @@ const createProductGroup = async (req, res) => {
     const data = {
         // name: product.name,
         products: req.body.products,
+        type: req.body.type,
         created: new Date().getTime(),
         updated: new Date().getTime(),
     };
+    if (!data.type) {
+        return res.status(400).json({
+            success: false,
+            message: "Type field is required",
+        });
+    }
     crudModel.create(data, productGroupSchema, async (err, response) => {
         if (err) {
             return res.status(400).json({

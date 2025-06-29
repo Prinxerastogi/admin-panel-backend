@@ -6,8 +6,11 @@ const listProductGroups = async (req, res) => {
         page: Number(req.query.start) || 0,
         limit: Number(req.query.limit) || 10,
     };
+const typeFilter = req.query.type;
+    const matchCondition = typeFilter ? { type: typeFilter } : {};
 
     const condition = [
+         { $match: matchCondition },
         {
             $sort: {
                 id: 1,
@@ -28,7 +31,7 @@ const listProductGroups = async (req, res) => {
             },
         },
     ];
-    const totalPages = await productGroupSchema.countDocuments();
+    const totalPages = await productGroupSchema.countDocuments(matchCondition);
     crudModel.aggregation(condition, productGroupSchema, (err, groups) => {
         if (err) {
             return res.status(400).json({
