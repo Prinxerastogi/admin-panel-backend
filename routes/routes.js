@@ -248,6 +248,7 @@ apiRoutes.post("/brand", controller.brand.add);
 apiRoutes.put("/brand", controller.brand.update);
 apiRoutes.get("/brand", controller.brand.view);
 apiRoutes.post("/add/subbrand", controller.brand.addSubBrand);
+apiRoutes.post("/delete",controller.brand.deleteSubBrand)
 apiRoutes.delete("/brand/:id", controller.brand.remove);
 apiRoutes.get("/subbrands", controller.brand.subBrands); //not is use
 
