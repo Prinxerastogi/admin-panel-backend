@@ -470,11 +470,15 @@ apiRoutes.put("/chatbot/upload", controller.chatbot.image);
 apiRoutes.post("/chatbot/openNew", controller.chatbot.openNew);
 apiRoutes.post("/chatbot/resolveTicket", controller.chatbot.resolveTicket);
 apiRoutes.get("/tickets/graph-data", controller.chatbot.getTicketGraphData);
-apiRoutes.get("/tickets/graph-response", controller.chatbot.getFirstResponseTime);
+apiRoutes.get(
+    "/tickets/graph-response",
+    controller.chatbot.getFirstResponseTime
+);
 apiRoutes.get("/tickets/resolution", controller.chatbot.getTicketGraphData11);
-apiRoutes.get("/tickets/firstResponse", controller.chatbot.getFirstResponseTime11);
-
-
+apiRoutes.get(
+    "/tickets/firstResponse",
+    controller.chatbot.getFirstResponseTime11
+);
 
 // otp limit routes
 apiRoutes.post("/otp/limit", controller.otpLimit.add);
@@ -511,6 +515,7 @@ apiRoutes.post(
     controller.deliveryBoy.updateRentedBike
 );
 apiRoutes.post("/importCsvAndUpdate", controller.product.importCsvAndUpdate);
+apiRoutes.post("/bulkUpdateGrowAasan", controller.growassan.grwBulkUpdate);
 
 apiRoutes.post(
     "/deliveryboy/changeBankAccount",
