@@ -9,7 +9,7 @@ const { ObjectId } = mongoose.Types;
 const storage = multer.diskStorage({
     destination: function (req, file, cb) {
         console.log("file", file);
-        cb(null, "/temp/");
+        cb(null, "/tmp/");
     },
     filename: function (req, file, cb) {
         console.log("file", file);
@@ -35,7 +35,7 @@ module.exports = [
             return res.status(400).send("No file uploaded.");
         }
 
-        const filePath = "/temp/importedCsv.csv";
+        const filePath = "/tmp/importedCsv.csv";
 
         // row name sellerProductId	ManufacturerDetails	Country	ExpiryMonth
         // Read CSV file and update documents
