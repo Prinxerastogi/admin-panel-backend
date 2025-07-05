@@ -4,7 +4,6 @@ const multer = require("multer");
 // const sellerProductSchema = require("../../sharedmb/schema/sellerproduct");
 const productSchema = require("../../sharedmb/schema/product");
 const mongoose = require("mongoose");
-const { ObjectId } = mongoose.Types;
 
 const storage = multer.diskStorage({
     destination: function (req, file, cb) {
