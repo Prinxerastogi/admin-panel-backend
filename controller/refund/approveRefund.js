@@ -138,7 +138,7 @@ const processRefund = async (req, res, next) => {
         if (refund.amountSplit.cash > 0) {
             successlog.info(
                 "processing cod refund" +
-                    refund.amountSplit.online +
+                    refund.amountSplit.cod +
                     " " +
                     refund._id
             );
@@ -246,7 +246,7 @@ const processWalletRefund = async (amount, order, refundId) => {
                 },
                 {
                     $set: {
-                        isWalletRefunded: false,
+                        isWalletRefunded: true,
                     },
                 },
                 {

@@ -48,8 +48,7 @@ let orderSchema = new Schema(
                 barCode: { type: String, lowercase: true },
                 productFamilyId: { type: Schema.Types.ObjectId, default: null },
                 isRefund: { type: Boolean, default: false },
-                refundedQuantity: {type: Number, default :0 },
-       
+                refundedQuantity: { type: Number, default: 0 },
                 outOfStock: {
                     isOutOfStock: { type: Boolean, default: false },
                     setBy: { type: Schema.Types.ObjectId, ref: "sellers" },
@@ -148,8 +147,8 @@ let orderSchema = new Schema(
         totalSaving: String,
         couponDiscount: {
             type: Number,
-            get: (value) => value || 0, 
-            set: (value) =>value?  parseFloat(value.toFixed(2)) : 0,
+            get: (value) => value || 0,
+            set: (value) => (value ? parseFloat(value.toFixed(2)) : 0),
         },
         isCancelVerifyBySeller: { type: Boolean, default: false },
         CancelVerifyDateBySeller: Date,
@@ -230,7 +229,8 @@ let orderSchema = new Schema(
         previousProducts: [],
         nthOrder: { type: Number, default: 0 },
         smallCartFee: { type: Number, default: 0 },
-        totalRefundedAmount: {type: Number}
+        totalRefundedAmount: { type: Number },
+        isWalletRefunded: { type: Boolean, default: false },
     },
     {
         toObject: { getters: true, setters: true },
