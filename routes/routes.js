@@ -4,7 +4,10 @@ const productGroupSchema = require("../sharedmb/schema/productGroup");
 const config = require("config");
 const path = require("path");
 const fs = require("fs");
-const {deleteChatMessage,editChatMessage}= require("../controller/chatbot/editDelete")
+const {
+    deleteChatMessage,
+    editChatMessage,
+} = require("../controller/chatbot/editDelete");
 
 let apiRoutes = express.Router();
 const ticketController = require("../controller/chatbot/updateTicketTag");
@@ -248,7 +251,7 @@ apiRoutes.post("/brand", controller.brand.add);
 apiRoutes.put("/brand", controller.brand.update);
 apiRoutes.get("/brand", controller.brand.view);
 apiRoutes.post("/add/subbrand", controller.brand.addSubBrand);
-apiRoutes.post("/delete",controller.brand.deleteSubBrand)
+apiRoutes.post("/delete", controller.brand.deleteSubBrand);
 apiRoutes.delete("/brand/:id", controller.brand.remove);
 apiRoutes.get("/subbrands", controller.brand.subBrands); //not is use
 
@@ -464,8 +467,8 @@ apiRoutes.get("/chatbot/listTickets", controller.chatbot.listTickets);
 apiRoutes.get("/chatbot/viewTicket", controller.chatbot.viewTicket);
 apiRoutes.get("/chatbot/findByPhone", controller.chatbot.viewTicketByPhone);
 apiRoutes.post("/chatbot/resumeTicket", controller.chatbot.resumeTicket);
-apiRoutes.post("/chatbot/delete",deleteChatMessage)
-apiRoutes.post("/chatbot/edit",editChatMessage)
+apiRoutes.post("/chatbot/delete", deleteChatMessage);
+apiRoutes.post("/chatbot/edit", editChatMessage);
 apiRoutes.put("/chatbot/upload", controller.chatbot.image);
 apiRoutes.post("/chatbot/openNew", controller.chatbot.openNew);
 apiRoutes.post("/chatbot/resolveTicket", controller.chatbot.resolveTicket);
@@ -515,7 +518,7 @@ apiRoutes.post(
     controller.deliveryBoy.updateRentedBike
 );
 apiRoutes.post("/importCsvAndUpdate", controller.product.importCsvAndUpdate);
-apiRoutes.post("/bulkUpdateGrowAasan", controller.growassan.grwBulkUpdate);
+apiRoutes.post("/bulkUpdateGrowAasan", controller.efacto.efactoBulkUpdate);
 
 apiRoutes.post(
     "/deliveryboy/changeBankAccount",
