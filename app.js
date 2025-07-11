@@ -266,6 +266,7 @@ async function reverseGeocode(lat, lon) {
 
 let route = require("./routes");
 app.use("/api/admin", route.apiRoutes);
+app.use("/api/efacto", require("./routes/efactoRoutes"));
 app.listen(config.port, "0.0.0.0");
 console.log("Server open at http://localhost:" + config.port);
 

@@ -2,7 +2,7 @@ const fs = require("fs");
 const csv = require("csv-parser");
 const multer = require("multer");
 // const sellerProductSchema = require("../../sharedmb/schema/sellerproduct");
-const grwUsers = require("../../sharedmb/schema/grwUsers");
+const efactoUsers = require("../../sharedmb/schema/efactoUsers");
 const mongoose = require("mongoose");
 const { ObjectId } = mongoose.Types;
 
@@ -13,7 +13,7 @@ const storage = multer.diskStorage({
     },
     filename: function (req, file, cb) {
         console.log("file", file);
-        cb(null, "grw.csv");
+        cb(null, "efacto.csv");
     },
 });
 
@@ -35,7 +35,7 @@ module.exports = [
             return res.status(400).send("No file uploaded.");
         }
 
-        const filePath = "/tmp/grw.csv";
+        const filePath = "/tmp/efacto.csv";
 
         // row name sellerProductId	ManufacturerDetails	Country	ExpiryMonth
         // Read CSV file and update documents
@@ -47,9 +47,10 @@ module.exports = [
                 .on("data", async (row) => {
                     try {
                         // Sanitize phoneNumber: extract digits, take last 10 digits
-                        let phoneNumberStr = String(
-                            row.phoneNumber || ""
-                        ).replace(/\D/g, "");
+                        let phoneNumberStr = String(row.phoneNo || "").replace(
+                            /\D/g,
+                            ""
+                        );
                         let phoneNumber =
                             phoneNumberStr.length >= 10
                                 ? Number(phoneNumberStr.slice(-10))
@@ -65,9 +66,9 @@ module.exports = [
                             errProds.push(row);
                             return;
                         }
-                        await grwUsers.findOneAndUpdate(
+                        await efactoUsers.findOneAndUpdate(
                             {
-                                phoneNumber: phoneNumber,
+                                phoneNo: phoneNumber,
                             },
                             {
                                 $set: {
