@@ -518,7 +518,8 @@ apiRoutes.post(
     controller.deliveryBoy.updateRentedBike
 );
 apiRoutes.post("/importCsvAndUpdate", controller.product.importCsvAndUpdate);
-apiRoutes.post("/bulkUpdateGrowAasan", controller.efacto.efactoBulkUpdate);
+apiRoutes.post("/efactoBulkUpdate", controller.efacto.efactoBulkUpdate);
+apiRoutes.post("/efactoWebhookUpdate", controller.efacto.efactoWebhookUpdate);
 
 apiRoutes.post(
     "/deliveryboy/changeBankAccount",
