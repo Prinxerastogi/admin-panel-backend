@@ -76,12 +76,11 @@ module.exports = [
                             const formattedDate = new Date(
                                 `${year}-${month}-${day}`
                             );
-                            const sanitizedAmount = () => {
-                                const cleaned = row.amount.replace(/,/g, "");
-                                return cleaned.includes(".")
-                                    ? parseFloat(cleaned)
-                                    : parseInt(cleaned, 10);
-                            };
+                            const sanitizedAmount = row.amount
+                                .replace(/,/g, "")
+                                .includes(".")
+                                ? parseFloat(cleaned)
+                                : parseInt(cleaned, 10);
 
                             await efactoUsers.findOneAndUpdate(
                                 {
