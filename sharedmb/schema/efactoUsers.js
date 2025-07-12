@@ -1,6 +1,6 @@
 let mongoose = require("mongoose");
 let efactoUsers = mongoose.Schema({
-    phoneNumber: { type: Number, default: null },
+    phoneNo: { type: Number, default: null },
     totalPurchase: { type: Number, default: null },
     otp: { type: Number, default: null },
     requestOtpTime: { type: Date, default: null },

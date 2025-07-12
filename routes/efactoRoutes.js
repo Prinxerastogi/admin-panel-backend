@@ -15,8 +15,8 @@ efactoRoutes.post("/sendOtp", async (req, res) => {
         const phoneNumber = req.body.userId;
         const otp = utility.otpGenerate();
 
-        const updatedUser = await efactoUsers.findOneAndUpdate(
-            { phoneNumber },
+        await efactoUsers.findOneAndUpdate(
+            { phoneNo: phoneNumber },
             { $set: { otp, requestOtpTime: new Date() } },
             { upsert: true, new: true }
         );
@@ -56,7 +56,7 @@ efactoRoutes.post("/verifyOtp", async (req, res) => {
         const { userId, otp } = req.body;
 
         const user = await efactoUsers.findOne({
-            phoneNumber: userId,
+            phoneNo: userId,
             otp: otp,
             requestOtpTime: { $gt: new Date(Date.now() - 5 * 60 * 1000) },
         });
