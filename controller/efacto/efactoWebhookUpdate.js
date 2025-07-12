@@ -79,8 +79,8 @@ module.exports = [
                             const sanitizedAmount = row.amount
                                 .replace(/,/g, "")
                                 .includes(".")
-                                ? parseFloat(cleaned)
-                                : parseInt(cleaned, 10);
+                                ? parseFloat(row.amount.replace(/,/g, ""))
+                                : parseInt(row.amount.replace(/,/g, ""), 10);
 
                             await efactoUsers.findOneAndUpdate(
                                 {
