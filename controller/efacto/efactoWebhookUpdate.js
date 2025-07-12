@@ -71,6 +71,12 @@ module.exports = [
                             invoiceNo: row.invoiceNo,
                         });
                         if (!existingInvoice) {
+                            const inputDate = row.date;
+                            const [day, month, year] = inputDate.split("/");
+                            const formattedDate = new Date(
+                                `${year}-${month}-${day}`
+                            );
+
                             await efactoUsers.findOneAndUpdate(
                                 {
                                     phoneNo: row.phoneNo,
@@ -89,7 +95,7 @@ module.exports = [
                                 phoneNo: row.phoneNo,
                                 invoiceNo: row.invoiceNo,
                                 amount: row.amount,
-                                date: row.date,
+                                date: formattedDate,
                             });
                         }
                     } catch (err) {
