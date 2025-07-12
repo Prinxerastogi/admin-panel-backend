@@ -76,6 +76,12 @@ module.exports = [
                             const formattedDate = new Date(
                                 `${year}-${month}-${day}`
                             );
+                            const sanitizedAmount = () => {
+                                const cleaned = row.amount.replace(/,/g, "");
+                                return cleaned.includes(".")
+                                    ? parseFloat(cleaned)
+                                    : parseInt(cleaned, 10);
+                            };
 
                             await efactoUsers.findOneAndUpdate(
                                 {
@@ -83,7 +89,7 @@ module.exports = [
                                 },
                                 {
                                     $inc: {
-                                        totalPurchase: row.amount,
+                                        totalPurchase: sanitizedAmount,
                                     },
                                 },
                                 {
@@ -94,7 +100,7 @@ module.exports = [
                             await efactoInvoices.create({
                                 phoneNo: row.phoneNo,
                                 invoiceNo: row.invoiceNo,
-                                amount: row.amount,
+                                amount: sanitizedAmount,
                                 date: formattedDate,
                             });
                         }
