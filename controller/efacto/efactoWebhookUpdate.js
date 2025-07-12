@@ -1,125 +1,104 @@
 const fs = require("fs");
 const csv = require("csv-parser");
 const multer = require("multer");
-// const sellerProductSchema = require("../../sharedmb/schema/sellerproduct");
 const efactoUsers = require("../../sharedmb/schema/efactoUsers");
-const mongoose = require("mongoose");
 const efactoInvoices = require("../../sharedmb/schema/efactoInvoices");
-const { ObjectId } = mongoose.Types;
 
 const storage = multer.diskStorage({
-    destination: function (req, file, cb) {
-        console.log("file", file);
-        cb(null, "/tmp/");
-    },
-    filename: function (req, file, cb) {
-        console.log("file", file);
-        cb(null, "efactoInvoices.csv");
-    },
+    destination: (req, file, cb) => cb(null, "/tmp/"),
+    filename: (req, file, cb) => cb(null, "efactoInvoices.csv"),
 });
 
 const csvFilter = (req, file, cb) => {
-    if (file.mimetype.includes("csv")) {
-        cb(null, true);
-    } else {
-        cb("Please upload only CSV file.", false);
-    }
+    file.mimetype.includes("csv")
+        ? cb(null, true)
+        : cb("Only CSVs allowed", false);
 };
 
-const upload = multer({ storage: storage, fileFilter: csvFilter });
+const upload = multer({ storage, fileFilter: csvFilter });
 
-// Express route to handle CSV upload
 module.exports = [
     upload.single("csvFile"),
     async (req, res) => {
-        if (!req.file) {
-            return res.status(400).send("No file uploaded.");
-        }
+        if (!req.file) return res.status(400).send("No file uploaded.");
 
         const filePath = "/tmp/efactoInvoices.csv";
+        const rows = [];
 
-        // row name sellerProductId	ManufacturerDetails	Country	ExpiryMonth
-        // Read CSV file and update documents
         try {
-            let errProds = [];
-            let successProds = 0;
             fs.createReadStream(filePath)
                 .pipe(csv())
-                .on("data", async (row) => {
-                    try {
-                        // Sanitize phoneNumber: extract digits, take last 10 digits
-                        let phoneNumberStr = String(row.phoneNo || "").replace(
-                            /\D/g,
-                            ""
-                        );
-                        let phoneNumber =
-                            phoneNumberStr.length >= 10
-                                ? Number(phoneNumberStr.slice(-10))
-                                : null;
+                .on("data", (row) => rows.push(row))
+                .on("end", async () => {
+                    let errProds = [],
+                        successProds = 0;
 
-                        // Sanitize purchaseValue: parse as float, ignore decimals
-                        let purchaseValue = parseInt(
-                            String(row.amount).replace(/[^\d]/g, ""),
-                            10
-                        );
-
-                        if (!phoneNumber || isNaN(purchaseValue)) {
-                            errProds.push(row);
-                            return;
-                        }
-                        let existingInvoice = await efactoInvoices.findOne({
-                            invoiceNo: row.invoiceNo,
-                        });
-                        if (!existingInvoice) {
-                            const inputDate = row.date;
-                            const [day, month, year] = inputDate.split("/");
-                            const formattedDate = new Date(
-                                `${year}-${month}-${day}`
+                    for (const row of rows) {
+                        try {
+                            const phoneStr = String(row.phoneNo || "").replace(
+                                /\D/g,
+                                ""
                             );
-                            const sanitizedAmount = row.amount
-                                .replace(/,/g, "")
-                                .includes(".")
-                                ? parseFloat(row.amount.replace(/,/g, ""))
-                                : parseInt(row.amount.replace(/,/g, ""), 10);
-
-                            let newUser = await efactoUsers.findOneAndUpdate(
-                                {
-                                    phoneNo: row.phoneNo,
-                                },
-                                {
-                                    $inc: {
-                                        totalPurchase: sanitizedAmount,
-                                    },
-                                },
-                                {
-                                    upsert: true,
-                                    new: true,
-                                }
+                            const phoneNo =
+                                phoneStr.length >= 10
+                                    ? phoneStr.slice(-10)
+                                    : null;
+                            const amountStr = (row.amount || "").replace(
+                                /,/g,
+                                ""
                             );
-                            if (!newUser) errProds.push(row.phoneNo);
-                            await efactoInvoices.create({
-                                phoneNo: row.phoneNo,
+                            const amount = amountStr.includes(".")
+                                ? parseFloat(amountStr)
+                                : parseInt(amountStr, 10);
+
+                            if (!phoneNo || isNaN(amount)) {
+                                errProds.push({
+                                    row,
+                                    reason: "Invalid phoneNo or amount",
+                                });
+                                continue;
+                            }
+
+                            const existing = await efactoInvoices.findOne({
                                 invoiceNo: row.invoiceNo,
-                                amount: sanitizedAmount,
-                                date: formattedDate,
                             });
+                            if (existing) continue;
+
+                            const [day, month, year] = (row.date || "").split(
+                                "/"
+                            );
+                            const date = new Date(`${year}-${month}-${day}`);
+
+                            await efactoUsers.findOneAndUpdate(
+                                { phoneNo },
+                                { $inc: { totalPurchase: amount } },
+                                { upsert: true, new: true }
+                            );
+
+                            await efactoInvoices.create({
+                                phoneNo,
+                                invoiceNo: row.invoiceNo,
+                                amount,
+                                date,
+                            });
+
+                            successProds++;
+                        } catch (err) {
+                            errProds.push({ row, reason: err.message });
                         }
-                    } catch (err) {
-                        console.error("Error updating document:", err);
                     }
-                })
-                .on("end", () => {
-                    console.log("success", successProds);
-                    console.log("error", errProds.length);
-                    console.log(errProds);
-                    // client.close();
-                    // Optionally, delete the uploaded file after processing
+
                     fs.unlinkSync(filePath);
-                    res.send("CSV file processed and documents updated.");
+                    res.json({
+                        message: "CSV processed",
+                        successCount: successProds,
+                        errorCount: errProds.length,
+                        errors: errProds,
+                    });
                 });
         } catch (err) {
-            console.error("Error processing CSV file:", err);
-            res.status(500).send("Error processing CSV file.");
+            console.error("Processing error:", err);
+            res.status(500).send("Failed to process CSV file.");
         }
     },
 ];
