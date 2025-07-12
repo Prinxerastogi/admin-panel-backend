@@ -17,6 +17,8 @@ const csvFilter = (req, file, cb) => {
 
 const upload = multer({ storage, fileFilter: csvFilter });
 
+const BATCH_SIZE = 20; // adjust based on your DB performance
+
 module.exports = [
     upload.single("csvFile"),
     async (req, res) => {
@@ -33,62 +35,71 @@ module.exports = [
                     let errProds = [],
                         successProds = 0;
 
-                    for (const row of rows) {
-                        try {
-                            const phoneStr = String(row.phoneNo || "").replace(
-                                /\D/g,
-                                ""
-                            );
-                            const phoneNo =
-                                phoneStr.length >= 10
-                                    ? phoneStr.slice(-10)
-                                    : null;
-                            const amountStr = (row.amount || "").replace(
-                                /,/g,
-                                ""
-                            );
-                            const amount = amountStr.includes(".")
-                                ? parseFloat(amountStr)
-                                : parseInt(amountStr, 10);
+                    // Process in batches
+                    for (let i = 0; i < rows.length; i += BATCH_SIZE) {
+                        const batch = rows.slice(i, i + BATCH_SIZE);
 
-                            if (!phoneNo || isNaN(amount)) {
-                                errProds.push({
-                                    row,
-                                    reason: "Invalid phoneNo or amount",
+                        const tasks = batch.map(async (row) => {
+                            try {
+                                const phoneStr = String(
+                                    row.phoneNo || ""
+                                ).replace(/\D/g, "");
+                                const phoneNo =
+                                    phoneStr.length >= 10
+                                        ? phoneStr.slice(-10)
+                                        : null;
+                                const amountStr = (row.amount || "").replace(
+                                    /,/g,
+                                    ""
+                                );
+                                const amount = amountStr.includes(".")
+                                    ? parseFloat(amountStr)
+                                    : parseInt(amountStr, 10);
+
+                                if (!phoneNo || isNaN(amount)) {
+                                    errProds.push({
+                                        row,
+                                        reason: "Invalid phoneNo or amount",
+                                    });
+                                    return;
+                                }
+
+                                const exists = await efactoInvoices.findOne({
+                                    invoiceNo: row.invoiceNo,
                                 });
-                                continue;
+                                if (exists) return;
+
+                                const [day, month, year] = (
+                                    row.date || ""
+                                ).split("/");
+                                const date = new Date(
+                                    `${year}-${month}-${day}`
+                                );
+
+                                await efactoUsers.findOneAndUpdate(
+                                    { phoneNo },
+                                    { $inc: { totalPurchase: amount } },
+                                    { upsert: true, new: true }
+                                );
+
+                                await efactoInvoices.create({
+                                    phoneNo,
+                                    invoiceNo: row.invoiceNo,
+                                    amount,
+                                    date,
+                                });
+
+                                successProds++;
+                            } catch (err) {
+                                errProds.push({ row, reason: err.message });
                             }
+                        });
 
-                            const existing = await efactoInvoices.findOne({
-                                invoiceNo: row.invoiceNo,
-                            });
-                            if (existing) continue;
-
-                            const [day, month, year] = (row.date || "").split(
-                                "/"
-                            );
-                            const date = new Date(`${year}-${month}-${day}`);
-
-                            await efactoUsers.findOneAndUpdate(
-                                { phoneNo },
-                                { $inc: { totalPurchase: amount } },
-                                { upsert: true, new: true }
-                            );
-
-                            await efactoInvoices.create({
-                                phoneNo,
-                                invoiceNo: row.invoiceNo,
-                                amount,
-                                date,
-                            });
-
-                            successProds++;
-                        } catch (err) {
-                            errProds.push({ row, reason: err.message });
-                        }
+                        await Promise.all(tasks); // wait for current batch to finish
                     }
 
                     fs.unlinkSync(filePath);
+
                     return res.json({
                         message: "CSV processed",
                         successCount: successProds,
