@@ -73,7 +73,7 @@ module.exports = [
                         if (!existingInvoice) {
                             await efactoUsers.findOneAndUpdate(
                                 {
-                                    phoneNo: phoneNo,
+                                    phoneNo: row.phoneNo,
                                 },
                                 {
                                     $inc: {
