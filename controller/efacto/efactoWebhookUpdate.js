@@ -89,7 +89,7 @@ module.exports = [
                     }
 
                     fs.unlinkSync(filePath);
-                    res.json({
+                    return res.json({
                         message: "CSV processed",
                         successCount: successProds,
                         errorCount: errProds.length,
@@ -98,7 +98,7 @@ module.exports = [
                 });
         } catch (err) {
             console.error("Processing error:", err);
-            res.status(500).send("Failed to process CSV file.");
+            return res.status(500).send("Failed to process CSV file.");
         }
     },
 ];
