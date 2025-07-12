@@ -82,7 +82,7 @@ module.exports = [
                                 ? parseFloat(row.amount.replace(/,/g, ""))
                                 : parseInt(row.amount.replace(/,/g, ""), 10);
 
-                            await efactoUsers.findOneAndUpdate(
+                            let newUser = await efactoUsers.findOneAndUpdate(
                                 {
                                     phoneNo: row.phoneNo,
                                 },
@@ -96,6 +96,7 @@ module.exports = [
                                     new: true,
                                 }
                             );
+                            if (!newUser) errProds.push(row.phoneNo);
                             await efactoInvoices.create({
                                 phoneNo: row.phoneNo,
                                 invoiceNo: row.invoiceNo,
