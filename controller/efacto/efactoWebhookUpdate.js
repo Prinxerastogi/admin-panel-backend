@@ -68,8 +68,7 @@ module.exports = [
                                     invoiceNo: row.invoiceNo,
                                 });
                                 if (exists) return;
-
-                                const [month, day, year] = (
+                                const [day, month, year] = (
                                     row.date || ""
                                 ).split("/");
                                 const fullYear =
