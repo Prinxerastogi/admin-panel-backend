@@ -69,7 +69,7 @@ module.exports = [
                                 });
                                 if (exists) return;
 
-                                const [day, month, year] = (
+                                const [month, day, year] = (
                                     row.date || ""
                                 ).split("/");
                                 const fullYear =
