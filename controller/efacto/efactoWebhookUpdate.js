@@ -72,8 +72,13 @@ module.exports = [
                                 const [day, month, year] = (
                                     row.date || ""
                                 ).split("/");
+                                const fullYear =
+                                    year.length === 2 ? `20${year}` : year;
                                 const date = new Date(
-                                    `${year}-${month}-${day}`
+                                    `${fullYear}-${month.padStart(
+                                        2,
+                                        "0"
+                                    )}-${day.padStart(2, "0")}`
                                 );
 
                                 await efactoUsers.findOneAndUpdate(
