@@ -249,7 +249,7 @@ apiRoutes.post("/brand", controller.brand.add);
 apiRoutes.put("/brand", controller.brand.update);
 apiRoutes.get("/brand", controller.brand.view);
 apiRoutes.post("/add/subbrand", controller.brand.addSubBrand);
-apiRoutes.post("/delete",controller.brand.deleteSubBrand)
+apiRoutes.post("/delete", controller.brand.deleteSubBrand);
 apiRoutes.delete("/brand/:id", controller.brand.remove);
 apiRoutes.get("/subbrands", controller.brand.subBrands); //not is use
 
@@ -443,7 +443,6 @@ apiRoutes.put("/infopage/status/:id", controller.info.changeStatus);
 apiRoutes.put("/infopage/delete/:id", controller.info.deleteInfoPage);
 apiRoutes.put("/infopage/remove/image/:id", controller.info.deleteImages);
 
-
 // otp limit routes
 apiRoutes.post("/otp/limit", controller.otpLimit.add);
 apiRoutes.put("/otp/limit", controller.otpLimit.update);
@@ -479,6 +478,8 @@ apiRoutes.post(
     controller.deliveryBoy.updateRentedBike
 );
 apiRoutes.post("/importCsvAndUpdate", controller.product.importCsvAndUpdate);
+apiRoutes.post("/efactoBulkUpdate", controller.efacto.efactoBulkUpdate);
+apiRoutes.post("/efactoWebhookUpdate", controller.efacto.efactoWebhookUpdate);
 
 apiRoutes.post(
     "/deliveryboy/changeBankAccount",

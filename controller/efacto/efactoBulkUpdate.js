@@ -2,8 +2,9 @@ const fs = require("fs");
 const csv = require("csv-parser");
 const multer = require("multer");
 // const sellerProductSchema = require("../../sharedmb/schema/sellerproduct");
-const productSchema = require("../../sharedmb/schema/product");
+const efactoUsers = require("../../sharedmb/schema/efactoUsers");
 const mongoose = require("mongoose");
+const { ObjectId } = mongoose.Types;
 
 const storage = multer.diskStorage({
     destination: function (req, file, cb) {
@@ -12,7 +13,7 @@ const storage = multer.diskStorage({
     },
     filename: function (req, file, cb) {
         console.log("file", file);
-        cb(null, "importedCsv.csv");
+        cb(null, "efacto.csv");
     },
 });
 
@@ -34,7 +35,7 @@ module.exports = [
             return res.status(400).send("No file uploaded.");
         }
 
-        const filePath = "/tmp/importedCsv.csv";
+        const filePath = "/tmp/efacto.csv";
 
         // row name sellerProductId	ManufacturerDetails	Country	ExpiryMonth
         // Read CSV file and update documents
@@ -45,34 +46,40 @@ module.exports = [
                 .pipe(csv())
                 .on("data", async (row) => {
                     try {
-                        let updateBlock = {};
-                        if (row?.barCode && row?.barCode2) {
-                            updateBlock["$set"] = {
-                                altBarCodes: [row.barCode, row.barCode2],
-                            };
-                        } else if (row?.barCode && !row?.barCode2) {
-                            updateBlock["$set"] = {
-                                altBarCodes: [row.barCode],
-                            };
-                        } else if (!row?.barCode && row?.barCode2) {
-                            updateBlock["$set"] = {
-                                altBarCodes: [row.barCode2],
-                            };
-                        } else {
-                            errProds.push(row?.hsnCode);
+                        // Sanitize phoneNumber: extract digits, take last 10 digits
+                        let phoneNumberStr = String(row.phoneNo || "").replace(
+                            /\D/g,
+                            ""
+                        );
+                        let phoneNumber =
+                            phoneNumberStr.length >= 10
+                                ? Number(phoneNumberStr.slice(-10))
+                                : null;
+
+                        // Sanitize purchaseValue: parse as float, ignore decimals
+                        let purchaseValue = parseInt(
+                            String(row.totalPurchase).replace(/[^\d]/g, ""),
+                            10
+                        );
+
+                        if (!phoneNumber || isNaN(purchaseValue)) {
+                            errProds.push(row);
+                            return;
                         }
-                        productSchema
-                            .findOneAndUpdate(
-                                { hsnCode: row?.hsnCode },
-                                updateBlock
-                            )
-                            .then((doc) => {
-                                if (doc) {
-                                    successProds++;
-                                } else {
-                                    errProds.push(row?.hsnCode);
-                                }
-                            });
+                        await efactoUsers.findOneAndUpdate(
+                            {
+                                phoneNo: phoneNumber,
+                            },
+                            {
+                                $set: {
+                                    totalPurchase: purchaseValue,
+                                },
+                            },
+                            {
+                                upsert: true,
+                                new: true,
+                            }
+                        );
                     } catch (err) {
                         console.error("Error updating document:", err);
                     }
@@ -81,7 +88,7 @@ module.exports = [
                     console.log("success", successProds);
                     console.log("error", errProds.length);
                     console.log(errProds);
-                    client.close();
+                    // client.close();
                     // Optionally, delete the uploaded file after processing
                     fs.unlinkSync(filePath);
                     res.send("CSV file processed and documents updated.");

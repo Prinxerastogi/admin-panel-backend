@@ -194,6 +194,15 @@ module.exports.otpResendWow = (payload, callback) => {
     });
 };
 
+module.exports.otpSendWowAll = (payload, callback) => {
+    let link = `https://smsapi.24x7sms.com/api_2.0/SendSMS.aspx?APIKEY=${process.env.smsapiKey}&MobileNo=${payload.phoneNo}&SenderID=AKBAZA&Message=${payload.body}&ServiceName=TEMPLATE_BASED`;
+    needle.get(link, function (err, response) {
+        console.log(err);
+        if (err) callback(err, null);
+        else callback(null, response);
+    });
+};
+
 module.exports.checkValidEmail = (res, email) => {
     if (MailChecker.isValid(email)) {
         return email;
