@@ -4,15 +4,11 @@ const productGroupSchema = require("../sharedmb/schema/productGroup");
 const config = require("config");
 const path = require("path");
 const fs = require("fs");
-const {
-    deleteChatMessage,
-    editChatMessage,
-} = require("../controller/chatbot/editDelete");
 
 let apiRoutes = express.Router();
-const ticketController = require("../controller/chatbot/updateTicketTag");
 const { groupArray } = require("./groupIt");
-
+const createRoleBasedJwtAuth = require("../controller/middleware/tokenmiddleware");
+apiRoutes.use("/chbt",controller.chatbot.routes)
 apiRoutes.post("/github/webhook", controller.github.webhook);
 apiRoutes.get("/", (req, res) => {
     return res.status(200).json({
@@ -103,7 +99,9 @@ apiRoutes.get("/ratings", controller.ratings.getAllRatings);
 apiRoutes.post("/login", controller.admin.login);
 apiRoutes.get("/routes", controller.apiRoutes.list);
 apiRoutes.get("/offer/orders", controller.offer.OfferOrders);
-apiRoutes.use(controller.middleware.tokenmiddleware);
+// apiRoutes.use(controller.middleware.tokenmiddleware);
+apiRoutes.use(createRoleBasedJwtAuth(["admin"]));
+
 // apiRoutes.use(controller.middleware.aclmiddeleware)
 apiRoutes.post("/remove/product/image", controller.image.removeProductImage);
 apiRoutes.post("/remove/category/image", controller.category.deleteImage);
@@ -444,44 +442,6 @@ apiRoutes.put("/infopage/:id", controller.info.update);
 apiRoutes.put("/infopage/status/:id", controller.info.changeStatus);
 apiRoutes.put("/infopage/delete/:id", controller.info.deleteInfoPage);
 apiRoutes.put("/infopage/remove/image/:id", controller.info.deleteImages);
-
-// chat routes
-apiRoutes.get("/chats", controller.chat.list);
-apiRoutes.get("/chat/:orderId", controller.chat.detail);
-
-apiRoutes.post(
-    "/chatbot/update-chat-progress",
-    controller.chatbot.updateChatProgress
-);
-apiRoutes.post("/chatbot/note", controller.chatbot.createNote);
-
-apiRoutes.get("/chatbot/ticket-tags", ticketController.getTagOptions);
-apiRoutes.get(
-    "/chatbot/ticket-with-tag-options",
-    ticketController.getTicketWithTagOptions
-);
-apiRoutes.get("/chatbot/tickets-by-tag", ticketController.getTicketsByTag);
-apiRoutes.post("/chatbot/ticket-tag", ticketController.updateTicketTag);
-apiRoutes.get("/chatbot/listAll", controller.chatbot.listAll);
-apiRoutes.get("/chatbot/listTickets", controller.chatbot.listTickets);
-apiRoutes.get("/chatbot/viewTicket", controller.chatbot.viewTicket);
-apiRoutes.get("/chatbot/findByPhone", controller.chatbot.viewTicketByPhone);
-apiRoutes.post("/chatbot/resumeTicket", controller.chatbot.resumeTicket);
-apiRoutes.post("/chatbot/delete", deleteChatMessage);
-apiRoutes.post("/chatbot/edit", editChatMessage);
-apiRoutes.put("/chatbot/upload", controller.chatbot.image);
-apiRoutes.post("/chatbot/openNew", controller.chatbot.openNew);
-apiRoutes.post("/chatbot/resolveTicket", controller.chatbot.resolveTicket);
-apiRoutes.get("/tickets/graph-data", controller.chatbot.getTicketGraphData);
-apiRoutes.get(
-    "/tickets/graph-response",
-    controller.chatbot.getFirstResponseTime
-);
-apiRoutes.get("/tickets/resolution", controller.chatbot.getTicketGraphData11);
-apiRoutes.get(
-    "/tickets/firstResponse",
-    controller.chatbot.getFirstResponseTime11
-);
 
 // otp limit routes
 apiRoutes.post("/otp/limit", controller.otpLimit.add);

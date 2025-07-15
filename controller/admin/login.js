@@ -23,7 +23,7 @@ module.exports = (req, res) => {
                             id: response._id,
                             email: response.email,
                         };
-                        let token = jwt.sign(payload, config.secret, {
+                        let token = jwt.sign(payload, process.env.ADMIN_JWT_SECRET_KEY, {
                             // expiresIn: config.tokenValidity.day,
                         });
                         response.token = token;
