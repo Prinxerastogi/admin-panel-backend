@@ -19,7 +19,49 @@ let productSKUlastDigits = (index) => {
             return index;
     }
 };
+let validateHsnCode = (req, res, next) => {
+         if (!req.body.product.hsnCode) {
+        return res.status(400).json({
+            success: false,
+            message: "HSN code is mandatory"
+        });
+    }
 
+    const hsnCode = req.body.product.hsnCode.toString();
+    const productId = req.body.productId;
+if (!/^10\d{6}$/.test(hsnCode)) {
+        return res.status(400).json({
+            success: false,
+            message: "HSN code must be 8 digits starting with '10'"
+        });
+    }
+    productSchema.findOne({
+        hsnCode: hsnCode,
+        _id: { $ne: mongoose.Types.ObjectId(productId) }
+    }, (err, existingProduct) => {
+        if (err) {
+            return res.status(400).json({
+                success: false,
+                message: "Error checking HSN code",
+                error: err
+            });
+        }
+
+        if (existingProduct) {
+            return res.status(400).json({
+                success: false,
+                message: "HSN code already exists for another product",
+                existingProduct: {
+                    id: existingProduct._id,
+                    name: existingProduct.name,
+                    sku: existingProduct.sku
+                }
+            });
+        }
+
+        next();
+    });
+};
 let findBarcodeAndUpdate = (req, res, next) => {
     req.data = {};
     let condition = {
@@ -318,6 +360,7 @@ let updateProduct = (req, res) => {
 
 module.exports = [
     validate(validation.updateProduct),
+    validateHsnCode,
     findBarcodeAndUpdate,
     checkLeafCategory,
     // findProductSku,
