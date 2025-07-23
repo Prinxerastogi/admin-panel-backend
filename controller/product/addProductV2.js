@@ -24,7 +24,48 @@ let productSKUlastDigits = (index) => {
             return index;
     }
 };
+let checkHsnCode = (req, res, next) => {
+    if (!req.body.hsnCode) {
+        return res.status(400).json({
+            success: false,
+            message: "HSN code is mandatory"
+        });
+    }
 
+    let hsnCode = req.body.hsnCode.toString();
+
+    if (!/^10\d{6}$/.test(hsnCode)) {
+        return res.status(400).json({
+            success: false,
+            message: "HSN code must be 8 digits starting with '10'"
+        });
+    }
+
+    productSchema.findOne({ hsnCode: hsnCode }, (err, product) => {
+        if (err) {
+            return res.status(400).json({
+                error: true,
+                success: false,
+                message: "Error checking HSN code",
+                err
+            });
+        }
+        
+        if (product) {
+            return res.status(400).json({
+                success: false,
+                message: "HSN code already exists for another product",
+                existingProduct: {
+                    _id: product._id,
+                    name: product.name,
+                    sku: product.sku
+                }
+            });
+        }
+        
+        next();
+    });
+};
 let findProductSku = (req, res, next) => {
     let condition = [
         {
@@ -489,6 +530,7 @@ let updateParentProduct = (req, res) => {
 
 module.exports = [
     validate(validation.addProduct),
+    checkHsnCode,
     findProductSku,
     findBarcodeAndSKU,
     createProduct,
