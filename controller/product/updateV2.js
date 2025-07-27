@@ -20,8 +20,8 @@ let productSKUlastDigits = (index) => {
     }
 };
 let validateHsnCode = (req, res, next) => {
-         if (!req.body.product.hsnCode) {
-        return res.status(400).json({
+    if (!req.body.product.hsnCode) {
+        return res.json({
             success: false,
             message: "HSN code is mandatory"
         });
@@ -29,18 +29,19 @@ let validateHsnCode = (req, res, next) => {
 
     const hsnCode = req.body.product.hsnCode.toString();
     const productId = req.body.productId;
-if (!/^10\d{6}$/.test(hsnCode)) {
-        return res.status(400).json({
+    if (!/^10\d{6}$/.test(hsnCode)) {
+        return res.json({
             success: false,
             message: "HSN code must be 8 digits starting with '10'"
         });
     }
     productSchema.findOne({
         hsnCode: hsnCode,
-        _id: { $ne: mongoose.Types.ObjectId(productId) }
+        _id: { $ne: mongoose.Types.ObjectId(productId) },
+        isActive: true
     }, (err, existingProduct) => {
         if (err) {
-            return res.status(400).json({
+            return res.json({
                 success: false,
                 message: "Error checking HSN code",
                 error: err
@@ -48,7 +49,7 @@ if (!/^10\d{6}$/.test(hsnCode)) {
         }
 
         if (existingProduct) {
-            return res.status(400).json({
+            return res.json({
                 success: false,
                 message: "HSN code already exists for another product",
                 existingProduct: {
