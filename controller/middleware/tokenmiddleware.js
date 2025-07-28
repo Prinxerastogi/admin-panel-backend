@@ -1,9 +1,9 @@
-
 const jwt = require("jsonwebtoken");
 
 const sellerJWTToken = process.env.SELLER_JWT_SECRET_KEY;
-const adminJWTToken = process.env.ADMIN_JWT_SECRET_KEY; 
+const adminJWTToken = process.env.ADMIN_JWT_SECRET_KEY;
 const userJWTToken = process.env.JWT_SECRET_KEY;
+const ACCESS_TOKEN_SECRET = process.env.ACCESS_TOKEN_SECRET;
 
 /**
  * Factory to create JWT middleware with role-based access control.
@@ -14,9 +14,9 @@ function createRoleBasedJwtAuth(allowedRoles = []) {
         new Promise((resolve, reject) =>
             jwt.verify(token, secret, (err, decoded) =>
                 err ? reject(err) : resolve(decoded)
-            )  
+            )
         );
- 
+
     return async function roleBasedJwtAuth(req, res, next) {
         if (req.headers["x-api-key"] === process.env.crossApiKey) {
             req.decoded = {
@@ -42,15 +42,20 @@ function createRoleBasedJwtAuth(allowedRoles = []) {
             let role = "";
 
             try {
-                payload = await verifyWith(adminJWTToken, token);
-                    role = "admin";  
+                payload = await verifyWith(ACCESS_TOKEN_SECRET, token);
+                role = payload.role;
             } catch {
                 try {
                     payload = await verifyWith(sellerJWTToken, token);
-                role = "seller";
+                    role = "seller";
                 } catch {
-                    payload = await verifyWith(userJWTToken, token);
-                    role = "user";
+                    try {
+                        payload = await verifyWith(adminJWTToken, token);
+                        role = "admin";
+                    } catch {
+                        payload = await verifyWith(userJWTToken, token);
+                        role = "user";
+                    }
                 }
             }
 
