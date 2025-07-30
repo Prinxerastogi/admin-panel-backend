@@ -68,7 +68,7 @@ function createRoleBasedJwtAuth(allowedRoles = []) {
             req.decoded = { ...payload, role: role };
             return next();
         } catch (err) {
-            return res.status(401).json({ error: "Invalid token" });
+            return res.status(401).json({ error: "token_expired" });
         }
     };
 }
