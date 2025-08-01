@@ -8,7 +8,8 @@ const fs = require("fs");
 let apiRoutes = express.Router();
 const { groupArray } = require("./groupIt");
 const createRoleBasedJwtAuth = require("../controller/middleware/tokenmiddleware");
-apiRoutes.use("/chbt",controller.chatbot.routes)
+apiRoutes.use("/chbt", controller.chatbot.routes);
+apiRoutes.use("/restricted-offers", controller.restrictedOffer.routes);
 apiRoutes.post("/github/webhook", controller.github.webhook);
 apiRoutes.get("/", (req, res) => {
     return res.status(200).json({

@@ -40,6 +40,7 @@ let offerSchema = new Schema({
     },
     offerType: String, //refral,affliate,offer,
     userId: { type: Schema.Types.ObjectId, ref: "user" },
+    isRestricted: { type: Boolean, default: false },
 });
 
 offerSchema.plugin(AutoIncrement, { inc_field: "id", id: "offerId" });
