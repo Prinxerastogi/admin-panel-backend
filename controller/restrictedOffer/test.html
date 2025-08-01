@@ -1,0 +1,232 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>Customer Offer Redemption</title>
+        <style>
+            body {
+                font-family: Arial, sans-serif;
+                background: #f7f9fc;
+                margin: 0;
+                padding: 30px;
+            }
+            h1 {
+                text-align: center;
+                color: #333;
+                margin-bottom: 30px;
+            }
+            .card {
+                max-width: 500px;
+                margin: auto;
+                background: #fff;
+                padding: 25px;
+                border-radius: 12px;
+                box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+            }
+            label {
+                font-weight: 600;
+                margin: 15px 0 5px;
+                display: block;
+            }
+            input {
+                width: 100%;
+                padding: 10px;
+                font-size: 16px;
+                border: 1px solid #ccc;
+                border-radius: 6px;
+            }
+            button {
+                display: block;
+                width: 100%;
+                margin-top: 20px;
+                padding: 12px;
+                font-size: 16px;
+                font-weight: bold;
+                color: #fff;
+                background-color: #007bff;
+                border: none;
+                border-radius: 6px;
+                cursor: pointer;
+                transition: background-color 0.2s;
+            }
+            button:hover {
+                background-color: #0056b3;
+            }
+            .offer {
+                padding: 12px;
+                border-radius: 8px;
+                margin: 10px 0;
+                color: white;
+                font-weight: bold;
+                cursor: pointer;
+            }
+            .offer.active {
+                background-color: #28a745;
+            }
+            .offer.redeemed {
+                background-color: #6c757d;
+                cursor: not-allowed;
+            }
+            .offer.expired {
+                background-color: #dc3545;
+                cursor: not-allowed;
+            }
+            #offers h3 {
+                margin-bottom: 10px;
+                color: #333;
+            }
+        </style>
+    </head>
+    <body>
+        <h1>Customer Offer Redemption</h1>
+
+        <main class="card">
+            <section>
+                <label for="phone">Customer Phone Number</label>
+                <input
+                    type="tel"
+                    id="phone"
+                    maxlength="10"
+                    placeholder="Enter 10-digit number"
+                />
+                <button onclick="sendOtp()">Send OTP</button>
+            </section>
+
+            <section id="otp-section" style="display: none">
+                <label for="otp">Enter OTP</label>
+                <input
+                    type="text"
+                    id="otp"
+                    maxlength="6"
+                    placeholder="Enter 4-digit OTP"
+                />
+                <button onclick="verifyOtp()">Verify OTP</button>
+            </section>
+
+            <section id="offers" style="margin-top: 20px"></section>
+        </main>
+
+        <script>
+            let phone = "";
+
+            async function sendOtp() {
+                phone = document.getElementById("phone").value.trim();
+                if (!/^\d{10}$/.test(phone)) {
+                    alert("Enter a valid 10-digit phone number.");
+                    return;
+                }
+
+                try {
+                    await fetch(
+                        "http://localhost:13066/api/admin/restricted-offers/sendOtp",
+                        {
+                            method: "POST",
+                            headers: { "Content-Type": "application/json" },
+                            body: JSON.stringify({ userId: Number(phone) }),
+                        }
+                    );
+
+                    alert("OTP sent successfully!");
+                    document.getElementById("otp-section").style.display =
+                        "block";
+                } catch (err) {
+                    alert("Error sending OTP. Please try again.");
+                }
+            }
+
+            async function verifyOtp() {
+                const otp = document.getElementById("otp").value.trim();
+                if (!otp) {
+                    alert("Please enter the OTP.");
+                    return;
+                }
+
+                try {
+                    const res = await fetch(
+                        "http://localhost:13066/api/admin/restricted-offers/verifyOtp",
+                        {
+                            method: "POST",
+                            headers: { "Content-Type": "application/json" },
+                            body: JSON.stringify({
+                                userId: Number(phone),
+                                otp: Number(otp),
+                            }),
+                        }
+                    );
+
+                    const data = await res.json();
+                    if (!data.success) {
+                        alert("Invalid OTP.");
+                        return;
+                    }
+
+                    alert("OTP verified successfully!");
+                    loadOffers();
+                } catch (err) {
+                    alert("OTP verification failed. Please try again.");
+                }
+            }
+
+            async function loadOffers() {
+                try {
+                    const res = await fetch(
+                        `http://localhost:13066/api/admin/restricted-offers/user/${phone}`
+                    );
+                    const offers = await res.json();
+
+                    const container = document.getElementById("offers");
+                    container.innerHTML = "<h3>Available Offers</h3>";
+
+                    offers.forEach((offer) => {
+                        const name = offer.offerId?.name || "Unnamed Offer";
+                        const status = offer.status?.toLowerCase() || "unknown";
+                        const offerId = offer.offerId?._id;
+
+                        const div = document.createElement("div");
+                        div.className = `offer ${status}`;
+                        div.textContent = `${name} - ${status.toUpperCase()}`;
+
+                        if (status === "active") {
+                            div.ondblclick = () =>
+                                handleRedemption(offerId, name);
+                        }
+
+                        container.appendChild(div);
+                    });
+                } catch (err) {
+                    alert("Failed to load offers.");
+                }
+            }
+
+            async function handleRedemption(offerId, offerName) {
+                const confirmText = prompt(
+                    `To redeem "${offerName}", type "yes"`
+                );
+
+                if (confirmText?.toLowerCase() === "yes") {
+                    try {
+                        const url = `http://localhost:13066/api/admin/restricted-offers/redeem/${phone}/${offerId}/offline`;
+                        const res = await fetch(url, { method: "POST" });
+                        const data = await res.json();
+
+                        if (data.success) {
+                            alert(`Offer "${offerName}" marked as redeemed.`);
+                            loadOffers(); // refresh the list
+                        } else {
+                            alert(
+                                `Failed to redeem offer: ${
+                                    data.message || "Unknown error"
+                                }`
+                            );
+                        }
+                    } catch (err) {
+                        alert("Redemption request failed.");
+                    }
+                } else {
+                    alert("Redemption cancelled.");
+                }
+            }
+        </script>
+    </body>
+</html>
