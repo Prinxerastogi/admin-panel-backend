@@ -11,6 +11,7 @@ apiRoutes.get("/", async (req, res) => {
     return res.json({ success: true, message: "Welcome to GrowAasan Routes" });
 });
 apiRoutes.get("/user/:userId", currFolder.getByUser);
+apiRoutes.get("/user/:userId/:offerId", currFolder.getUserOffer);
 apiRoutes.post("/add-users/:offerId", currFolder.addUsersToOffer);
 apiRoutes.post("/redeem/:userId/:offerId/:mode", currFolder.redeemCoupon);
 apiRoutes.delete("/remove/:userId/:offerId", currFolder.removeUserFromOffer);
