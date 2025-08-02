@@ -5,7 +5,7 @@ const restrictedOfferSchema = new Schema(
     {
         phoneNo: { type: Number, required: true },
         offerId: { type: Schema.Types.ObjectId, ref: "offer", required: true },
-        redeemedAt: { type: String, enum: ["online", "offline"] },
+        redeemedMode: { type: String, enum: ["online", "offline"] },
         redeemedOn: { type: Date },
         status: {
             type: String,
