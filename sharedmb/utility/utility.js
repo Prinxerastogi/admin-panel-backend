@@ -203,6 +203,23 @@ module.exports.otpSendWowAll = (payload, callback) => {
     });
 };
 
+module.exports.cronJobs = {
+    everySecond: "* * * * * *",
+    every5Seconds: "*/5 * * * * *",
+    every10Seconds: "*/10 * * * * *",
+    every30Seconds: "*/30 * * * * *",
+    everyMinute: "0 * * * * *",
+    every5Minutes: "0 */5 * * * *",
+    every10Minutes: "0 */10 * * * *",
+    every30Minutes: "0 */30 * * * *",
+    everyHour: "0 0 * * * *",
+    at12pmEveryDay: "0 0 12 * * *",
+    at02pmEveryDay: "0 0 14 * * *",
+    at04pmEveryDay: "0 0 16 * * *",
+    at08pmEveryDay: "0 0 20 * * *",
+    at12amEveryDay: "0 0 0 * * *",
+};
+
 module.exports.checkValidEmail = (res, email) => {
     if (MailChecker.isValid(email)) {
         return email;
