@@ -17,8 +17,7 @@ apiRoutes.get("/", (req, res) => {
         message: "Welcome to the Admin Api",
     });
 });
-apiRoutes.post("/growassan/webhook/whatsapp", controller.growassan.webhook);
-apiRoutes.post("/growassan/webhook/efacto", controller.growassan.webhook);
+apiRoutes.post("/growassan/webhook/:type", controller.growassan.webhook);
 apiRoutes.get("/home", controller.home); ////not in use
 apiRoutes.get("/bulkWrite", async (req, res) => {
     try {

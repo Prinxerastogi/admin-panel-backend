@@ -4,11 +4,12 @@ const main = async (req, res, next) => {
     try {
         const webhook = new webhookSchema({
             data: req.body,
+            type: req.params.type,
         });
 
-        await webhook.save()
+        await webhook.save();
 
-        console.log(webhook)
+        console.log(webhook);
         if (!webhook) {
             throw Error("CANNOT SAVE WEBhook");
         }
