@@ -23,7 +23,7 @@ let validateHsnCode = (req, res, next) => {
     if (!req.body.product.hsnCode) {
         return res.json({
             success: false,
-            message: "HSN code is mandatory"
+            message: "HSN code is mandatory",
         });
     }
 
@@ -32,36 +32,40 @@ let validateHsnCode = (req, res, next) => {
     if (!/^10\d{6}$/.test(hsnCode)) {
         return res.json({
             success: false,
-            message: "HSN code must be 8 digits starting with '10'"
+            message: "HSN code must be 8 digits starting with '10'",
         });
     }
-    productSchema.findOne({
-        hsnCode: hsnCode,
-        _id: { $ne: mongoose.Types.ObjectId(productId) },
-        isActive: true
-    }, (err, existingProduct) => {
-        if (err) {
-            return res.json({
-                success: false,
-                message: "Error checking HSN code",
-                error: err
-            });
-        }
+    productSchema.findOne(
+        {
+            hsnCode: hsnCode,
+            _id: { $ne: mongoose.Types.ObjectId(productId) },
+            isActive: true,
+        },
+        (err, existingProduct) => {
+            if (err) {
+                return res.json({
+                    success: false,
+                    message: "Error checking HSN code",
+                    error: err,
+                });
+            }
 
-        if (existingProduct) {
-            return res.json({
-                success: false,
-                message: "HSN code already exists for another product",
-                existingProduct: {
-                    id: existingProduct._id,
-                    name: existingProduct.name,
-                    sku: existingProduct.sku
-                }
-            });
-        }
+            if (existingProduct) {
+                return res.json({
+                    success: false,
+                    message:
+                        "HSN code already exists for >" + existingProduct?.name,
+                    existingProduct: {
+                        id: existingProduct._id,
+                        name: existingProduct.name,
+                        sku: existingProduct.sku,
+                    },
+                });
+            }
 
-        next();
-    });
+            next();
+        }
+    );
 };
 let findBarcodeAndUpdate = (req, res, next) => {
     req.data = {};
@@ -324,7 +328,9 @@ let updateProduct = (req, res) => {
         purchasePrice: product.purchasePrice,
         minSellPrice: product.minSellPrice,
         barCode: product.barCode,
-        altBarCodes: product.altBarCodes ? product.altBarCodes.map(code => code.toLowerCase()) : [],
+        altBarCodes: product.altBarCodes
+            ? product.altBarCodes.map((code) => code.toLowerCase())
+            : [],
     };
     let condition = {
         _id: req.body.productId,
