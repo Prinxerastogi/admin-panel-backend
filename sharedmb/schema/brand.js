@@ -25,34 +25,34 @@ let brandSchema = new Schema({
 brandSchema.plugin(AutoIncrement, { inc_field: "id", id: "brandId" });
 
 // Mongoosastic plugin
-brandSchema.plugin(mongoosastic, {
-    index: config.elasticSearch.index.brands,
-    hosts: config.elasticSearch.hosts,
-});
+// brandSchema.plugin(mongoosastic, {
+//     index: config.elasticSearch.index.brands,
+//     hosts: config.elasticSearch.hosts,
+// });
 
 // // Create the model
 const Brand = mongoose.model("Brand", brandSchema);
 
-try {
-    // // Synchronize the model with Elasticsearch
-    const stream = Brand.synchronize();
-    let count = 0;
+// try {
+//     // // Synchronize the model with Elasticsearch
+//     const stream = Brand.synchronize();
+//     let count = 0;
 
-    stream.on("data", (err, doc) => {
-        if (err) console.error(err);
-        count++;
-    });
+//     stream.on("data", (err, doc) => {
+//         if (err) console.error(err);
+//         count++;
+//     });
 
-    stream.on("close", () => {
-        console.log(`Indexed ${count} brands!`);
-    });
+//     stream.on("close", () => {
+//         console.log(`Indexed ${count} brands!`);
+//     });
 
-    stream.on("error", (err) => {
-        console.error(err);
-    });
-} catch (err) {
-    console.error("Failed to start synchronization:", err);
-}
+//     stream.on("error", (err) => {
+//         console.error(err);
+//     });
+// } catch (err) {
+//     console.error("Failed to start synchronization:", err);
+// }
 
 mongoose.set("useCreateIndex", true);
 brandSchema.index({ _id: -1, id: -1 });
