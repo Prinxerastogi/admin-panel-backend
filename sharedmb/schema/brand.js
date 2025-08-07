@@ -1,8 +1,10 @@
 let mongoose = require("mongoose");
 let Schema = mongoose.Schema;
 let AutoIncrement = require("mongoose-sequence")(mongoose);
+let mongoosastic = require("mongoosastic");
+let config = require("config");
 
-let barndSchema = new Schema({
+let brandSchema = new Schema({
     name: { type: String },
     _name: { type: String, lowercase: true },
     lName: { type: String, lowercase: true },
@@ -20,5 +22,35 @@ let barndSchema = new Schema({
     date: { type: Date },
 });
 
-barndSchema.plugin(AutoIncrement, { inc_field: "id", id: "brandId" });
-module.exports = mongoose.model("brand", barndSchema);
+brandSchema.plugin(AutoIncrement, { inc_field: "id", id: "brandId" });
+
+// Mongoosastic plugin
+brandSchema.plugin(mongoosastic, {
+    index: config.elasticSearch.index.brands,
+    hosts: config.elasticSearch.hosts,
+});
+
+// // Create the model
+const Brand = mongoose.model("Brand", brandSchema);
+
+// // Synchronize the model with Elasticsearch
+const stream = Brand.synchronize();
+let count = 0;
+
+stream.on("data", (err, doc) => {
+    if (err) console.error(err);
+    count++;
+});
+
+stream.on("close", () => {
+    console.log(`Indexed ${count} brands!`);
+});
+
+stream.on("error", (err) => {
+    console.error(err);
+});
+
+mongoose.set("useCreateIndex", true);
+brandSchema.index({ _id: -1, id: -1 });
+
+module.exports = Brand;
