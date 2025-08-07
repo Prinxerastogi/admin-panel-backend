@@ -10,7 +10,7 @@ let categorySchema = new Schema({
         lowercase: true,
         es_indexed: true,
         es_type: "completion",
-        es_search_analyzer: "dark_magic",
+        // es_search_analyzer: "dark_magic",
     },
     _name: { type: String, lowercase: true }, //grocery
     parentId: { type: Schema.Types.ObjectId, index: 1 },
@@ -64,31 +64,31 @@ categorySchema.plugin(mongoosastic, {
 // Create the model
 const Category = mongoose.model("Category", categorySchema);
 
-Category.createMapping(
-    {
-        mappings: {
-            properties: {
-                name: {
-                    type: "completion",
-                    search_analyzer: "dark_magic",
-                },
-            },
-        },
-    },
-    (err, mapping) => {
-        if (err) {
-            console.log(
-                "Error creating mapping (you can safely ignore this):",
-                err
-            );
-        } else {
-            console.log(
-                "Mapping created category:",
-                mapping.properties.name.fields
-            );
-        }
-    }
-);
+// Category.createMapping(
+//     {
+//         mappings: {
+//             properties: {
+//                 name: {
+//                     type: "completion",
+//                     search_analyzer: "dark_magic",
+//                 },
+//             },
+//         },
+//     },
+//     (err, mapping) => {
+//         if (err) {
+//             console.log(
+//                 "Error creating mapping (you can safely ignore this):",
+//                 err
+//             );
+//         } else {
+//             console.log(
+//                 "Mapping created category:",
+//                 mapping.properties.name.fields
+//             );
+//         }
+//     }
+// );
 // Synchronize the model with Elasticsearch
 const stream = Category.synchronize();
 let count = 0;
