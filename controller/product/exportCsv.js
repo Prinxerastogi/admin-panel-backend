@@ -36,6 +36,9 @@ module.exports = [
                         sku: "$productInfo.sku",
                         barCode: "$productInfo.barCode",
                         hsnCode: "$productInfo.hsnCode",
+                        metaKeyword: "$productInfo.metaKeyword",
+                        metaTitle: "$productInfo.metaTitle",
+                        metaDescription: "$productInfo.metaDescription",
                     },
                 },
             ]);
@@ -63,6 +66,9 @@ module.exports = [
                 "recommendedAttribute",
                 "description",
                 "image",
+                "metaTitle",
+                "metaKeyword",
+                "metaDescription",
             ];
 
             // Initialize the JSON to CSV parser
