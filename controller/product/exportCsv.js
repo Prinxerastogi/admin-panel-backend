@@ -36,9 +36,9 @@ module.exports = [
                         sku: "$productInfo.sku",
                         barCode: "$productInfo.barCode",
                         hsnCode: "$productInfo.hsnCode",
-                        metaKeyword: "$productInfo.metaKeyword",
-                        metaTitle: "$productInfo.metaTitle",
-                        metaDescription: "$productInfo.metaDescription",
+                        metaKeyword: "$productInfo.seo.metaKeyword",
+                        metaTitle: "$productInfo.seo.metaTitle",
+                        metaDescription: "$productInfo.seo.metaDescription",
                     },
                 },
             ]);
