@@ -42,7 +42,7 @@ module.exports = [
                         metaKeyword: "$productInfo.seo.metaKeywords",
                         metaTitle: "$productInfo.seo.metaTitle",
                         metaDescription: "$productInfo.seo.metaDescription",
-                        imageCount:{$size:"$images"},
+                        imageCount:{$size:"$productInfo.images"},
                     },
                 },
                 {
