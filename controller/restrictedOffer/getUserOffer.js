@@ -7,7 +7,7 @@ module.exports = async (req, res) => {
             phoneNo: Number(req.params.userId),
             offerId: Types.ObjectId(req.params.offerId),
         });
-        return res.json({ success: true, data: result });
+        return res.json({ success: true, data: result[0]});
     } catch (error) {
         return res.json({ success: false, message: "INTERNAL SERVER ERROR" });
     }

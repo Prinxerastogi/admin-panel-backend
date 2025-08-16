@@ -57,13 +57,13 @@ let productSchema = new Schema({
         es_indexed: false,
     },
     seo: {
-        metaTitle: { type: String, es_indexed: true },
+        metaTitle: { type: String, es_indexed: false },
         metaKeywords: { type: String, es_indexed: true },
-        metaDescription: { type: String, es_indexed: true },
+        metaDescription: { type: String, es_indexed: false },
         canonical: String,
     },
     urlKey: { type: String, lowercase: true },
-    images: [{ type: String, es_indexed: true }],
+    images: [{ type: String, es_indexed: false }],
     tags: [],
     assets: {
         images: [
@@ -88,8 +88,7 @@ let productSchema = new Schema({
     brand: {
         id: { type: Schema.Types.ObjectId },
         image: [String],
-        name: { type: String, lowercase: true },
-        es_indexed: false,
+        name: { type: String, lowercase: true, es_indexed: true },
     }, //grocery
     subBrand: {
         id: { type: Schema.Types.ObjectId },
@@ -135,7 +134,7 @@ let productSchema = new Schema({
     verification: {
         isImageVerify: { type: Boolean, default: false },
         isproductDetailVerify: { type: Boolean, default: false },
-        isApproved: { type: Boolean, default: false, es_indexed: true },
+        isApproved: { type: Boolean, default: false, es_indexed: false },
         es_indexed: false,
     },
     approvedBy: { type: Schema.Types.ObjectId },
@@ -259,17 +258,17 @@ model.createMapping({}, (err, mapping) => {
     }
 });
 
-let stream = model.synchronize();
-let count = 0;
-stream.on("data", function (err, doc) {
-    count++;
-});
-stream.on("close", function () {
-    console.log("indexed " + count + " documents!");
-});
-stream.on("error", function (err) {
-    console.log(err);
-});
+// let stream = model.synchronize();
+// let count = 0;
+// stream.on("data", function (err, doc) {
+//     count++;
+// });
+// stream.on("close", function () {
+//     console.log("indexed " + count + " documents!");
+// });
+// stream.on("error", function (err) {
+//     console.log(err);
+// });
 
 mongoose.set("useCreateIndex", true);
 productSchema.index({ tags: 1 });
