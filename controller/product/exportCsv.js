@@ -42,6 +42,7 @@ module.exports = [
                         metaKeyword: "$productInfo.seo.metaKeywords",
                         metaTitle: "$productInfo.seo.metaTitle",
                         metaDescription: "$productInfo.seo.metaDescription",
+                        imageCount:{$size:"$images"},
                     },
                 },
                 {
@@ -57,6 +58,7 @@ module.exports = [
                 {
                     $addFields: {
                         leafCategoryId: "$leafCategory",
+                        
                         leafCategoryName: {
                             $getField: {
                                 field: "name",
@@ -137,6 +139,7 @@ module.exports = [
                 "storeMinQuantity",
                 "sellerProductId",
                 "sku",
+                "imageCount",
                 "barCode",
                 "hsnCode",
                 "recommendedAttribute",
