@@ -39,6 +39,42 @@ module.exports = (req, res) => {
             },
         },
         
+        // Lookup previous refund requests for the same order (excluding pending status)
+        {
+            $lookup: {
+                from: "refunds",
+                let: { currentOrderId: "$orderId", currentRefundId: "$_id" },
+                pipeline: [
+                    {
+                        $match: {
+                            $expr: {
+                                $and: [
+                                    { $eq: ["$orderId", "$$currentOrderId"] },
+                                    { $ne: ["$_id", "$$currentRefundId"] },
+                                    { $ne: ["$status", "pending"] }  // Only non-pending requests
+                                ]
+                            }
+                        }
+                    },
+                    {
+                        $sort: {
+                            createdAt: -1
+                        }
+                    },
+                    {
+                        $project: {
+                            status: 1,
+                            createdAt: 1,
+                            acceptedOn: 1,
+                            rejectedOn: 1,
+                            amount: 1
+                        }
+                    }
+                ],
+                as: "previousRequests"
+            }
+        },
+        
         {
             $addFields: {
                 productIds: {
@@ -60,6 +96,20 @@ module.exports = (req, res) => {
                             }
                         }
                     }
+                },
+                // Add fields for previous request information
+                hasPreviousRequests: {
+                    $gt: [{ $size: "$previousRequests" }, 0]
+                },
+                previousRequestsCount: {
+                    $size: "$previousRequests"
+                },
+                lastPreviousRequest: {
+                    $cond: [
+                        { $gt: [{ $size: "$previousRequests" }, 0] },
+                        { $arrayElemAt: ["$previousRequests", 0] },
+                        null
+                    ]
                 }
             }
         },
@@ -137,6 +187,36 @@ module.exports = (req, res) => {
                         }
                     }
                 }
+            }
+        },
+        
+        // Final projection to clean up the output
+        {
+            $project: {
+                id: 1,
+                orderId: 1,
+                amount: 1,
+                status: 1,
+                products: 1,
+                deliveryFee: 1,
+                deliveryFeeAmount: 1,
+                customAmount: 1,
+                customAmountReason: 1,
+                smallCartFee: 1,
+                smallCartFeeAmount: 1,
+                amountSplit: 1,
+                refundBreakdown: 1,
+                rejectedOn: 1,
+                acceptedOn: 1,
+                refundReason: 1,
+                refundOtherReason: 1,
+                createdAt: 1,
+                updatedAt: 1,
+                orderDetails: 1,
+                productDetails: 1,
+                hasPreviousRequests: 1,
+                previousRequestsCount: 1,
+                previousRequests: 1,
             }
         }
     ];
