@@ -91,7 +91,6 @@ let getProducts = (req, res, next) => {
   if (req.query.nutrition) {
     filter["nutritionalFacts"] = req.query.nutrition === "false" ? { $eq: null } : { $ne: null };
   }
-
   aggregate.push({
     $match: filter,
   });
@@ -119,6 +118,17 @@ let getProducts = (req, res, next) => {
   if (value) {
     aggregate.push(search);
   }
+  aggregate.push({
+    $addFields: {
+      imageCount: {
+        $cond: {
+          if: { $isArray: "$images" },
+          then: { $size: "$images" },
+          else: 0
+        }
+      }
+    }
+  });
 
   let paginate = [
     {
@@ -138,12 +148,25 @@ let getProducts = (req, res, next) => {
           },
         },
       },
-    },
-    {
+    }
+  ];
+
+  if (req.query.images === "true") {
+    paginate.push({
+      $sort: {
+        imageCount: 1,
+        newProductSku: 1,
+      },
+    });
+  } else {
+    paginate.push({
       $sort: {
         newProductSku: 1,
       },
-    },
+    });
+  }
+
+  paginate.push(
     {
       $skip: pagination.page * pagination.limit,
     },
@@ -154,8 +177,8 @@ let getProducts = (req, res, next) => {
       $match: {
         isParent: true,
       },
-    },
-  ];
+    }
+  );
 
   aggregate = [...aggregate, ...paginate];
   crudModel.aggregation(aggregate, productSchema, (err, products) => {
