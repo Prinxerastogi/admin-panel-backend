@@ -1,9 +1,12 @@
 let ticketSchema = require("../../sharedmb/schema/ticket");
+
 module.exports = async (req, res) => {
     try {
         const page = parseInt(req.query.page) || 1;
         const perPageLimit = 10;
-        const totalTickets = await ticketSchema.countDocuments({
+
+        // Build match conditions
+        let matchConditions = {
             isOfflineCustomer:
                 req.query.customerType === "offline"
                     ? true
@@ -14,22 +17,68 @@ module.exports = async (req, res) => {
                 req.query.ticketType?.toLowerCase() === "all"
                     ? { $exists: true }
                     : req.query.ticketType?.toLowerCase(),
-        });
-        const paginatedTickets = await ticketSchema.aggregate([
+            chatProgress:
+                req.query.chatProgress?.toLowerCase() === "all"
+                    ? { $exists: true }
+                    : req.query.chatProgress?.toLowerCase()
+                    ? req.query.chatProgress?.toLowerCase()
+                    : { $exists: true },
+        };
+
+        // Add date range filter
+        if (req.query.startDate || req.query.endDate) {
+            matchConditions.createdAt = {};
+
+            if (req.query.startDate) {
+                const startDate = new Date(req.query.startDate);
+                // Check if date is valid
+                if (!isNaN(startDate.getTime())) {
+                    startDate.setHours(0, 0, 0, 0);
+                    matchConditions.createdAt.$gte = startDate;
+                }
+            }
+
+            if (req.query.endDate) {
+                const endDate = new Date(req.query.endDate);
+                // Check if date is valid
+                if (!isNaN(endDate.getTime())) {
+                    endDate.setHours(23, 59, 59, 999);
+                    matchConditions.createdAt.$lte = endDate;
+                }
+            }
+        }
+
+        // Get total tickets count with filters
+        const totalTickets = await ticketSchema.countDocuments(matchConditions);
+
+        // Get status wise count
+        const statusCountPipeline = [
+            { $match: matchConditions },
             {
-                $match: {
-                    ticketStatus:
-                        req.query.ticketType?.toLowerCase() === "all"
-                            ? { $exists: true }
-                            : req.query.ticketType?.toLowerCase(),
-                    isOfflineCustomer:
-                        req.query.customerType === "online"
-                            ? false
-                            : req.query.customerType === "offline"
-                            ? true
-                            : { $exists: true },
-                },
-            },
+                $group: {
+                    _id: "$ticketStatus",
+                    count: { $sum: 1 }
+                }
+            }
+        ];
+
+        const statusCounts = await ticketSchema.aggregate(statusCountPipeline);
+        
+        // Format status counts
+        const statusCountMap = {
+            open: 0,
+            closed: 0,
+            resolved: 0
+        };
+
+        statusCounts.forEach(status => {
+            if (statusCountMap.hasOwnProperty(status._id)) {
+                statusCountMap[status._id] = status.count;
+            }
+        });
+
+        const paginatedTickets = await ticketSchema.aggregate([
+            { $match: matchConditions },
             { $sort: { createdAt: -1 } },
             { $skip: perPageLimit * (page - 1) },
             { $limit: perPageLimit },
@@ -64,12 +113,14 @@ module.exports = async (req, res) => {
                 },
             },
         ]);
+
         return res.json({
             success: true,
             message: "Tickets fetched successfully",
             tickets: paginatedTickets,
             totalTickets: totalTickets,
             totalPages: Math.ceil(totalTickets / perPageLimit),
+            statusCounts: statusCountMap
         });
     } catch (error) {
         res.status(500).json({ error: error.message });
