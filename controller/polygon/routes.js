@@ -3,7 +3,7 @@ const express = require("express");
 const requireDirectory = require("require-directory");
 const createDualJwtAuth = require("../middleware/tokenmiddleware");
 const polygonRoutes = express.Router();
-const controller = requireDirectory(module, "./polygonControllers");
+const controller = requireDirectory(module, "./");
 
 polygonRoutes.use(createDualJwtAuth(["admin", "seller"]));
 

@@ -3,6 +3,7 @@ const Polygon = require("../../sharedmb/schema/polygon");
 
 const updatePolygon = async (req, res) => {
     try {
+        console.log("Updating polygon with ID:", req.params.id, req.body);
         const updates = req.body || {};
         const doc = await Polygon.findOneAndUpdate(
             { id: req.params.id },

@@ -4,22 +4,28 @@ let AutoIncrement = require("mongoose-sequence")(mongoose);
 
 let polygonSchema = new Schema(
     {
-        id: { type: String, required: true }, // UUID or "default"
+        id: { type: String, required: true },
         colorCode: { type: String, default: "#000000" },
-        coordinates: {
-            type: [[Number]], // array of [lat, lng] pairs
-            required: true,
+        geometry: {
+            type: {
+                type: String,
+                enum: ["Polygon"],
+                required: true,
+                default: "Polygon",
+            },
+            coordinates: {
+                type: [[[Number]]],
+                required: true,
+            },
         },
-        basePrice: { type: Number, default: 0 },
-        bonus: {
-            active: { type: Boolean, default: false },
-            amount: { type: Number, default: 0 },
-        },
+        config: {},
         createDate: { type: Date, default: Date.now },
         updateDate: { type: Date, default: Date.now },
     },
     { timestamps: true }
 );
+
+polygonSchema.index({ geometry: "2dsphere" });
 
 polygonSchema.plugin(AutoIncrement, {
     inc_field: "numericId",

@@ -8,19 +8,45 @@ const genId = () =>
 
 const createPolygon = async (req, res) => {
     try {
-        const payload = req.body || {};
-        payload.id = payload.id || genId();
+        const id = req.body.id || genId();
+        const { geometry, colorCode, basePrice, bonus } = req.body || {};
 
         if (
-            !Array.isArray(payload.coordinates) ||
-            payload.coordinates.length < 1
+            !geometry ||
+            geometry.type !== "Polygon" ||
+            !Array.isArray(geometry.coordinates)
         ) {
             return res
                 .status(400)
-                .json({
-                    error: "coordinates must be a non-empty array of [lat,lng]",
-                });
+                .json({ error: "geometry must be a valid GeoJSON Polygon" });
         }
+
+        let ring = geometry.coordinates[0] || [];
+
+        // ✅ Ensure polygon loop is closed
+        if (ring.length > 0) {
+            const [firstLng, firstLat] = ring[0];
+            const [lastLng, lastLat] = ring[ring.length - 1];
+            if (firstLng !== lastLng || firstLat !== lastLat) {
+                ring.push([firstLng, firstLat]);
+            }
+        }
+
+        const payload = {
+            id,
+            colorCode: colorCode || "#000000",
+            geometry: {
+                type: "Polygon",
+                coordinates: [ring],
+            },
+            config: {
+                basePrice: basePrice || 0,
+                bonus: {
+                    active: bonus?.active ?? false,
+                    amount: bonus?.amount ?? 0,
+                },
+            },
+        };
 
         const created = await Polygon.create(payload);
         return res.json(created);
