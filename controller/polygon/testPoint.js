@@ -3,7 +3,7 @@ const Polygon = require("../../sharedmb/schema/polygon");
 
 const testPoint = async (req, res) => {
     try {
-        const { lat, lng } = req.body || {};
+        const { lat, lng, variant } = req.body || {};
         const nlat = Number(lat);
         const nlng = Number(lng);
 
@@ -12,9 +12,12 @@ const testPoint = async (req, res) => {
                 .status(400)
                 .json({ error: "lat and lng must be valid numbers" });
         }
+        let finalVariant = "deliveryCost";
+        if (variant) finalVariant = variant;
 
         const hit = await Polygon.findOne(
             {
+                variant: finalVariant,
                 geometry: {
                     $geoIntersects: {
                         $geometry: {

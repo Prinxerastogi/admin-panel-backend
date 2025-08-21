@@ -3,7 +3,10 @@ const Polygon = require("../../sharedmb/schema/polygon");
 
 const getAllPolygons = async (req, res) => {
     try {
-        const docs = await Polygon.find().sort({ createdAt: 1 }).lean();
+        let variant = req.query.variant || "deliveryCost";
+        const docs = await Polygon.find({ variant: variant })
+            .sort({ createdAt: 1 })
+            .lean();
         return res.json(docs);
     } catch (err) {
         return res.status(500).json({

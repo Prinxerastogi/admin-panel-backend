@@ -9,7 +9,8 @@ const genId = () =>
 const createPolygon = async (req, res) => {
     try {
         const id = req.body.id || genId();
-        const { geometry, colorCode, basePrice, bonus } = req.body || {};
+        const { geometry, colorCode, variant, basePrice, bonus } =
+            req.body || {};
 
         if (
             !geometry ||
@@ -39,6 +40,7 @@ const createPolygon = async (req, res) => {
                 type: "Polygon",
                 coordinates: [ring],
             },
+            variant: variant || "deliveryCost",
             config: {
                 basePrice: basePrice || 0,
                 bonus: {
