@@ -13,19 +13,26 @@ const testPoint = async (req, res) => {
                 .json({ error: "lat and lng must be valid numbers" });
         }
 
-        const hit = await Polygon.findOne({
-            geometry: {
-                $geoIntersects: {
-                    $geometry: {
-                        type: "Point",
-                        coordinates: [nlng, nlat], // always [lng, lat]
+        const hit = await Polygon.findOne(
+            {
+                geometry: {
+                    $geoIntersects: {
+                        $geometry: {
+                            type: "Point",
+                            coordinates: [nlng, nlat], // always [lng, lat]
+                        },
                     },
                 },
             },
-        }).lean();
+            {
+                _id: 1,
+                id: 1,
+                config: 1,
+            }
+        ).lean();
 
-        if (!hit) return res.json({ hit: false });
-        return res.json({ hit: true, polygon: hit });
+        if (!hit) return res.json({ success: false });
+        return res.json({ success: true, polygon: hit });
     } catch (err) {
         return res.status(500).json({
             error: "Failed to test point",
