@@ -31,8 +31,13 @@ const testPoint = async (req, res) => {
             }
         ).lean();
 
-        if (!hit) return res.json({ success: false });
-        return res.json({ success: true, polygon: hit });
+        if (!hit)
+            return res.json({ success: false, message: "No Polygon Found" });
+        return res.json({
+            success: true,
+            message: "Polygon Found",
+            polygon: hit,
+        });
     } catch (err) {
         return res.status(500).json({
             error: "Failed to test point",
