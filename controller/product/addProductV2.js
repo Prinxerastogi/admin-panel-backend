@@ -9,7 +9,8 @@ let crud = require("../../sharedmb/models/crud"),
     validation = require("./validation"),
     utility = require("../../sharedmb/utility/utility"),
     moveImagefromTempToServer = require("../image/moveImageFromTempFolder"),
-    createImageVariantController = require("../image/imageVariant");
+    createImageVariantController = require("../image/imageVariant"),
+    panelTrack = require("../../sharedmb/schema/panelTack");
 
 let productSKUlastDigits = (index) => {
     switch (index.toString().length) {
@@ -25,6 +26,7 @@ let productSKUlastDigits = (index) => {
     }
 };
 let checkHsnCode = (req, res, next) => {
+    console.log("Checking HSN code:", req.decoded);
     if (!req.body.hsnCode) {
         return res.status(400).json({
             success: false,
@@ -275,6 +277,26 @@ let createProduct = (req, res, next) => {
             if (created) {
                 req.data = {};
                 req.data.product = created;
+  panelTrack.create({
+                    adminId: req.decoded.id,
+                    message: `New product created by ${req.decoded.role}`,
+                    type: "productCreate",
+                    productId: created._id,
+                    data: {
+                        name: created.name,
+                        sku: created.sku, 
+                        hsnCode: created.hsnCode,
+                        price: created.price,
+                        sellPrice: created.sellPrice,
+                        purchasePrice: created.purchasePrice,
+                        minSellPrice: created.minSellPrice,
+                        categoryId: created.categoryId,
+                        brand: created.brand,
+                        isSubscription: created.isSubscription,
+                        isOrder: created.isOrder,
+                        isMorningBuy: created.isMorningBuy
+                    }
+                });
                 next();
             } else {
                 return res.status(201).json({
@@ -283,7 +305,7 @@ let createProduct = (req, res, next) => {
                 });
             }
         })
-        .catch((err) => {
+        .catch((err) => { 
             return res.status(400).json({
                 success: false,
                 message: "error occured in product craetion",
@@ -366,6 +388,16 @@ let updateImages = (req, res, next) => {
                     err,
                 });
             } else {
+       panelTrack.create({
+                    adminId: req.decoded.id,
+                    message: `Product images added by ${req.decoded.role}`,
+                    type: "productImageUpdate",
+                    productId: req.data.product._id,
+                    data: {
+                        imagesCount: req.body.images.length,
+                        images: req.body.images
+                    }
+                });
                 if (!req.body.isParent) {
                     next();
                 } else {
@@ -514,6 +546,17 @@ let updateParentProduct = (req, res) => {
                 err,
             });
         } else if (response.nModified > 0) {
+             panelTrack.create({
+                adminId: req.decoded.id,
+                message: `Child product added to parent product by ${req.decoded.role}`,
+                type: "productRelationUpdate",
+                productId: req.data.product._id,
+                data: {
+                    childProductId: req.data.product._id,
+                    parentProductId: req.body.parentId,
+                    relationType: "child-parent"
+                }
+            });
             return res.status(200).json({
                 success: true,
                 message: "product added successfully",

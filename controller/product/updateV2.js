@@ -5,6 +5,7 @@ let validate = require("express-validation");
 let validation = require("./validation");
 let utility = require("../../sharedmb/utility/utility");
 let categorySchema = require("../../sharedmb/schema/category");
+let panelTrack=require("../../sharedmb/schema/panelTack");
 
 let productSKUlastDigits = (index) => {
     switch (index.toString().length) {
@@ -102,6 +103,16 @@ let findBarcodeAndUpdate = (req, res, next) => {
                 } else if (response.nModified == 1) {
                     console.log("barcode updated", response);
                     req.data.barCodeMessage = "barcode updated. ";
+                    panelTrack.create({
+                        adminId: req.decoded.id,
+                        message: `Product barcode updated by ${req.decoded.role}`,
+                        type: "productUpdate",
+                        productId: req.body.productId,
+                        data: {
+                            field: "barCode",
+                            newValue: req.body.product.barCode
+                        }
+                    });
                     next();
                 } else {
                     return res.status(200).json({
@@ -272,6 +283,16 @@ let updateCategoryIdInSellerProduct = (req, res, next) => {
                     err: err,
                 });
             } else {
+                 panelTrack.create({
+                    adminId: req.decoded.id,
+                    message: `Product category updated in seller products by ${req.decoded.role}`,
+                    type: "productCategoryUpdate",
+                    productId: req.body.productId,
+                    data: {
+                        oldCategoryId: req.data.oldCategoryId,
+                        newCategoryId: req.body.product.leafCatId
+                    }
+                });
                 next();
             }
         });
@@ -282,89 +303,120 @@ let updateCategoryIdInSellerProduct = (req, res, next) => {
 
 let updateProduct = (req, res) => {
     let product = req.body.product;
-    let updateProductDetails = {
-        name: product.name.toLowerCase(),
-        _name: utility.removeSpecialCharAndDash(product.name.toLowerCase()),
-        description: product.description ? product.description : null,
-        lDescription: product.description
-            ? utility.removeSpecialChar(product.description)
-            : null,
-        shortDesc: product.shortDesc ? product.shortDesc : null,
-        lShortDesc: product.shortDesc
-            ? utility.removeSpecialChar(product.shortDesc)
-            : null,
-        urlKey: product.urlKey,
-        sellPrice: product.price,
-        price: product.mrp,
-        brand: {
-            name: product.brand.name ? product.brand.name : null,
-            id: product.brand._id
-                ? mongoose.Types.ObjectId(product.brand._id)
-                : null,
-        },
-        subBrand: {
-            name: product.subBrand.name ? product.subBrand.name : null,
-            id: product.subBrand._id
-                ? mongoose.Types.ObjectId(product.subBrand._id)
-                : null,
-        },
-        shipping: product.shipping ? product.shipping : null,
-        seo: product.seo ? product.seo : null,
-        categoryId: mongoose.Types.ObjectId(product.leafCatId),
-        categories: mongoose.Types.ObjectId(product.leafCatId),
-        tags: product.tags,
-        hsnCode: product.hsnCode.toString(),
-        updated: new Date().getTime(),
-        isSubscription: product.isSubscription ? true : false,
-        isOrder: product.isOrder ? true : false,
-        isMorningBuy: product.isMorningBuy ? true : false,
-        membershipPrice: product.membershipPrice,
-        gst: product.gst,
-        gstDesc: product.gstDesc ? product.gstDesc : null,
-        recommendedAttribute: product.recommendedAttribute
-            ? product.recommendedAttribute
-            : null,
-        isLastBuy: product.isLastBuying ? true : false,
-        purchasePrice: product.purchasePrice,
-        minSellPrice: product.minSellPrice,
-        barCode: product.barCode,
-        altBarCodes: product.altBarCodes
-            ? product.altBarCodes.map((code) => code.toLowerCase())
-            : [],
-    };
-    let condition = {
-        _id: req.body.productId,
-    };
-    let update = {
-        $set: updateProductDetails,
-    };
-    if (product.images?.length > 0) {
-        update.$set.images = product.images;
-    }
-    productSchema.findOneAndUpdate(condition, update, (err, updated) => {
+    
+    productSchema.findOne({_id: req.body.productId}, (err, oldProduct) => {
         if (err) {
-            return res.status(400).json({
-                error: true,
-                message: "error accured in hold product",
-                success: false,
-                error: err,
-            });
-        } else if (updated) {
-            res.status(200).json({
-                success: true,
-                message:
-                    "updated successfully." +
-                    req.data.barCodeMessage +
-                    (req.data.skuMessage ? req.data.skuMessage : ""),
-            });
-        } else {
-            return res
-                .status(201)
-                .json({ success: false, message: "already updated" });
+            console.log("Error fetching old product data:", err);
         }
+        
+        req.data.oldProduct = oldProduct;
+        
+        let updateProductDetails = {
+            name: product.name.toLowerCase(),
+            _name: utility.removeSpecialCharAndDash(product.name.toLowerCase()),
+            description: product.description ? product.description : null,
+            lDescription: product.description
+                ? utility.removeSpecialChar(product.description)
+                : null,
+            shortDesc: product.shortDesc ? product.shortDesc : null,
+            lShortDesc: product.shortDesc
+                ? utility.removeSpecialChar(product.shortDesc)
+                : null,
+            urlKey: product.urlKey,
+            sellPrice: product.price,
+            price: product.mrp,
+            brand: {
+                name: product.brand.name ? product.brand.name : null,
+                id: product.brand._id
+                    ? mongoose.Types.ObjectId(product.brand._id)
+                    : null,
+            },
+            subBrand: {
+                name: product.subBrand.name ? product.subBrand.name : null,
+                id: product.subBrand._id
+                    ? mongoose.Types.ObjectId(product.subBrand._id)
+                    : null,
+            },
+            shipping: product.shipping ? product.shipping : null,
+            seo: product.seo ? product.seo : null,
+            categoryId: mongoose.Types.ObjectId(product.leafCatId),
+            categories: mongoose.Types.ObjectId(product.leafCatId),
+            tags: product.tags,
+            hsnCode: product.hsnCode.toString(),
+            updated: new Date().getTime(),
+            isSubscription: product.isSubscription ? true : false,
+            isOrder: product.isOrder ? true : false,
+            isMorningBuy: product.isMorningBuy ? true : false,
+            membershipPrice: product.membershipPrice,
+            gst: product.gst,
+            gstDesc: product.gstDesc ? product.gstDesc : null,
+            recommendedAttribute: product.recommendedAttribute
+                ? product.recommendedAttribute
+                : null,
+            isLastBuy: product.isLastBuying ? true : false,
+            purchasePrice: product.purchasePrice,
+            minSellPrice: product.minSellPrice,
+            barCode: product.barCode,
+            altBarCodes: product.altBarCodes
+                ? product.altBarCodes.map((code) => code.toLowerCase())
+                : [],
+        };
+        
+        let condition = {
+            _id: req.body.productId,
+        };
+        let update = {
+            $set: updateProductDetails,
+        };
+        if (product.images?.length > 0) {
+            update.$set.images = product.images;
+        }
+        
+        productSchema.findOneAndUpdate(condition, update, (err, updated) => {
+            if (err) {
+                return res.status(400).json({
+                    error: true,
+                    message: "error accured in hold product",
+                    success: false,
+                    error: err,
+                });
+            } else if (updated) {
+                const modifiedFields = {};
+                
+                if (req.data.oldProduct) {
+                    Object.keys(updateProductDetails).forEach(key => {
+                        if (JSON.stringify(req.data.oldProduct[key]) !== JSON.stringify(updateProductDetails[key])) {
+                            modifiedFields[key] = {
+                                // oldValue: req.data.oldProduct[key],
+                                newValue: updateProductDetails[key]
+                            };
+                        }
+                    });
+                }
+                
+                panelTrack.create({
+                    adminId: req.decoded.id,
+                    message: `Product updated by ${req.decoded.role}`,
+                    type: "productUpdate",
+                    productId: req.body.productId,
+                    data: modifiedFields
+                });
+                
+                res.status(200).json({
+                    success: true,
+                    message:
+                        "updated successfully." +
+                        req.data.barCodeMessage +
+                        (req.data.skuMessage ? req.data.skuMessage : ""),
+                });
+            } else {
+                return res
+                    .status(201)
+                    .json({ success: false, message: "already updated" });
+            }
+        });
     });
 };
-
 module.exports = [
     validate(validation.updateProduct),
     validateHsnCode,

@@ -244,6 +244,9 @@ apiRoutes.put("/product/update/v2", controller.product.updateV2);
 apiRoutes.put("/product/update/v3", controller.product.updateV3);
 apiRoutes.post("/product/findbarcode", controller.product.findBarcode);
 
+//panel track
+apiRoutes.get("/product/history", controller.panelTrack.productHistory);
+
 apiRoutes.get("/brands", controller.brand.show);
 apiRoutes.post("/brand", controller.brand.add);
 apiRoutes.put("/brand", controller.brand.update);

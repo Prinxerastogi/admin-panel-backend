@@ -11,6 +11,7 @@ let crudModel = require("../../sharedmb/models/crud"),
     sellerSchema = require("../../sharedmb/schema/seller"),
     categorySchema = require("../../sharedmb/schema/category"),
     sellerBrandSchema = require("../../sharedmb/schema/sellerBrand"),
+        panelTrack = require("../../sharedmb/schema/panelTack"),
     mongoose = require("mongoose");
 
 //sens email when the seller Aproved proved.
@@ -48,6 +49,21 @@ console.log("I am at step 0");
             } else if (updated) {
                 req.data = {};
                 req.data.product = updated;
+                panelTrack.create({
+                    adminId: req.decoded.id,
+                    message: `Product ${req.body.status ? 'activated' : 'deactivated'} by ${req.decoded.role}`,
+                    type: req.body.status ? "productActivate" : "productDeactivate",
+                    productId: req.body.productId,
+                    data: {
+                        previousStatus: updated.isActive,
+                        newStatus: req.body.status,
+                        verification: {
+                            isImageVerify: true,
+                            isproductDetailVerify: true,
+                            isApproved: true
+                        }
+                    }
+                });
 	if(req.body.status)
                 next();
 else
@@ -203,7 +219,7 @@ console.log("I am at step 5");
         isOrder: true,
         isActive: true,
 	isApproved:true,
-	approvedBy: mongoose.Types.ObjectId('617d23988687260562abcc99')
+	approvedBy: req.decoded.id,
     };
 
     crudModel.create(productData, sellerProductSchema, (err, response) => {
@@ -215,6 +231,21 @@ console.log("I am at step 5");
                 error: err,
             });
         } else {
+            panelTrack.create({
+                adminId: req.decoded.id,
+                message: `Seller product created by ${req.decoded.role}`,
+                type: "sellerProductCreate",
+                productId: req.data.product._id,
+                sellerProductId: response._id,
+                data: {
+                    sellerId: '617d2982bd68c94d0bcb9200',
+                    price: productData.price,
+                    sellPrice: productData.sellPrice,
+                    minSellPrice: productData.minSellPrice,
+                    purchasePrice: productData.purchasePrice,
+                    isApproved: true,
+                }
+            });
             res.status(200).json({
                 success: true,
                 message: MESSAGE.add.addSuccessfully,
