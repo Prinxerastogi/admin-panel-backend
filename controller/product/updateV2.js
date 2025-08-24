@@ -5,144 +5,143 @@ let validate = require("express-validation");
 let validation = require("./validation");
 let utility = require("../../sharedmb/utility/utility");
 let categorySchema = require("../../sharedmb/schema/category");
-let panelTrack=require("../../sharedmb/schema/panelTack");
+let panelTrack = require("../../sharedmb/schema/panelTack");
 
 let productSKUlastDigits = (index) => {
-    switch (index.toString().length) {
-        case 1:
-            return "000" + index;
-        case 2:
-            return "00" + index;
-        case 3:
-            return "0" + index;
-        case 4:
-        default:
-            return index;
-    }
+  switch (index.toString().length) {
+    case 1:
+      return "000" + index;
+    case 2:
+      return "00" + index;
+    case 3:
+      return "0" + index;
+    case 4:
+    default:
+      return index;
+  }
 };
 let validateHsnCode = (req, res, next) => {
-    if (!req.body.product.hsnCode) {
+  if (!req.body.product.hsnCode) {
+    return res.json({
+      success: false,
+      message: "HSN code is mandatory",
+    });
+  }
+
+  const hsnCode = req.body.product.hsnCode.toString();
+  const productId = req.body.productId;
+  if (!/^10\d{6}$/.test(hsnCode)) {
+    return res.json({
+      success: false,
+      message: "HSN code must be 8 digits starting with '10'",
+    });
+  }
+  productSchema.findOne(
+    {
+      hsnCode: hsnCode,
+      _id: { $ne: new mongoose.Types.ObjectId(productId) },
+      isActive: true,
+    },
+    (err, existingProduct) => {
+      if (err) {
         return res.json({
-            success: false,
-            message: "HSN code is mandatory",
+          success: false,
+          message: "Error checking HSN code",
+          error: err,
         });
-    }
+      }
 
-    const hsnCode = req.body.product.hsnCode.toString();
-    const productId = req.body.productId;
-    if (!/^10\d{6}$/.test(hsnCode)) {
+      if (existingProduct) {
         return res.json({
-            success: false,
-            message: "HSN code must be 8 digits starting with '10'",
+          success: false,
+          message: "HSN code already exists for >" + existingProduct?.name,
+          existingProduct: {
+            id: existingProduct._id,
+            name: existingProduct.name,
+            sku: existingProduct.sku,
+          },
         });
+      }
+
+      next();
     }
-    productSchema.findOne(
-        {
-            hsnCode: hsnCode,
-            _id: { $ne: mongoose.Types.ObjectId(productId) },
-            isActive: true,
-        },
-        (err, existingProduct) => {
-            if (err) {
-                return res.json({
-                    success: false,
-                    message: "Error checking HSN code",
-                    error: err,
-                });
-            }
-
-            if (existingProduct) {
-                return res.json({
-                    success: false,
-                    message:
-                        "HSN code already exists for >" + existingProduct?.name,
-                    existingProduct: {
-                        id: existingProduct._id,
-                        name: existingProduct.name,
-                        sku: existingProduct.sku,
-                    },
-                });
-            }
-
-            next();
-        }
-    );
+  );
 };
 let findBarcodeAndUpdate = (req, res, next) => {
-    req.data = {};
-    let condition = {
-        barCode: req.body.product.barCode,
-    };
-    productSchema.findOne(condition, (err, response) => {
-        if (err)
-            return res.status(400).json({
-                success: false,
-                message: "error occured in matching barcode",
-                err: err,
-            });
-        else if (response) {
-            console.log("barcode already exist", response);
-            req.data.barCodeMessage = "barcode already exist. ";
-            next();
+  req.data = {};
+  let condition = {
+    barCode: req.body.product.barCode,
+  };
+  productSchema.findOne(condition, (err, response) => {
+    if (err)
+      return res.status(400).json({
+        success: false,
+        message: "error occured in matching barcode",
+        err: err,
+      });
+    else if (response) {
+      console.log("barcode already exist", response);
+      req.data.barCodeMessage = "barcode already exist. ";
+      next();
+    } else {
+      let condition = {
+        _id: req.body.productId,
+      };
+      let update = {
+        $set: {
+          barCode: req.body.product.barCode,
+        },
+      };
+      productSchema.updateOne(condition, update, (err, response) => {
+        if (err) {
+          return res.status(400).json({
+            success: false,
+            message: "barcode udpate failed",
+            err: err,
+          });
+        } else if (response.nModified == 1) {
+          console.log("barcode updated", response);
+          req.data.barCodeMessage = "barcode updated. ";
+          panelTrack.create({
+            adminId: req.decoded.id,
+            message: `Product barcode updated by ${req.decoded.role}`,
+            type: "productUpdate",
+            productId: req.body.productId,
+            data: {
+              field: "barCode",
+              newValue: req.body.product.barCode,
+            },
+          });
+          next();
         } else {
-            let condition = {
-                _id: req.body.productId,
-            };
-            let update = {
-                $set: {
-                    barCode: req.body.product.barCode,
-                },
-            };
-            productSchema.updateOne(condition, update, (err, response) => {
-                if (err) {
-                    return res.status(400).json({
-                        success: false,
-                        message: "barcode udpate failed",
-                        err: err,
-                    });
-                } else if (response.nModified == 1) {
-                    console.log("barcode updated", response);
-                    req.data.barCodeMessage = "barcode updated. ";
-                    panelTrack.create({
-                        adminId: req.decoded.id,
-                        message: `Product barcode updated by ${req.decoded.role}`,
-                        type: "productUpdate",
-                        productId: req.body.productId,
-                        data: {
-                            field: "barCode",
-                            newValue: req.body.product.barCode
-                        }
-                    });
-                    next();
-                } else {
-                    return res.status(200).json({
-                        success: false,
-                        message: "barcode update failed",
-                    });
-                }
-            });
+          return res.status(200).json({
+            success: false,
+            message: "barcode update failed",
+          });
         }
-    });
+      });
+    }
+  });
 };
 
 let checkLeafCategory = (req, res, next) => {
-    let condition = {
-        _id: req.body.productId,
-        categoryId: req.body.product.leafCatId,
-    };
-    productSchema.findOne(condition, (err, response) => {
-        if (err) {
-            return res.status(400).json({
-                message: "error in find product",
-                error: err,
-                success: false,
-            });
-        } else {
-            req.data.isCategoryChanged = response ? false : true;
-            //req.data.isCategoryChanged = false;
-            next();
-        }
-    });
+  let condition = {
+    _id: req.body.productId,
+    categoryId: req.body.product.leafCatId,
+  };
+  productSchema.findOne(condition, (err, response) => {
+    if (err) {
+      return res.status(400).json({
+        message: "error in find product",
+        error: err,
+        success: false,
+      });
+    } else {
+      req.data.isCategoryChanged = response ? false : true;
+      //req.data.isCategoryChanged = false;
+      next();
+    }
+  });
 };
 
 // let findProductSku = (req, res, next) => {
@@ -150,7 +149,7 @@ let checkLeafCategory = (req, res, next) => {
 //         let condition = [
 //             {
 //                 '$match': {
-//                     '_id': mongoose.Types.ObjectId(req.body.product.leafCatId)
+//                     '_id': new mongoose.Types.ObjectId(req.body.product.leafCatId)
 //                 }
 //             }, {
 //                 '$lookup': {
@@ -268,162 +267,165 @@ let checkLeafCategory = (req, res, next) => {
 // }
 
 let updateCategoryIdInSellerProduct = (req, res, next) => {
-    if (req.data.isCategoryChanged) {
-        let condition = {
-            productId: req.body.productId,
-        };
-        let update = {
-            categoryId: req.body.product.leafCatId,
-        };
-        sellerSchema.updateOne(condition, update, (err, response) => {
-            if (err) {
-                return res.status(400).json({
-                    success: false,
-                    message: "category update failed for seller products",
-                    err: err,
-                });
-            } else {
-                 panelTrack.create({
-                    adminId: req.decoded.id,
-                    message: `Product category updated in seller products by ${req.decoded.role}`,
-                    type: "productCategoryUpdate",
-                    productId: req.body.productId,
-                    data: {
-                        oldCategoryId: req.data.oldCategoryId,
-                        newCategoryId: req.body.product.leafCatId
-                    }
-                });
-                next();
-            }
+  if (req.data.isCategoryChanged) {
+    let condition = {
+      productId: req.body.productId,
+    };
+    let update = {
+      categoryId: req.body.product.leafCatId,
+    };
+    sellerSchema.updateOne(condition, update, (err, response) => {
+      if (err) {
+        return res.status(400).json({
+          success: false,
+          message: "category update failed for seller products",
+          err: err,
         });
-    } else {
+      } else {
+        panelTrack.create({
+          adminId: req.decoded.id,
+          message: `Product category updated in seller products by ${req.decoded.role}`,
+          type: "productCategoryUpdate",
+          productId: req.body.productId,
+          data: {
+            oldCategoryId: req.data.oldCategoryId,
+            newCategoryId: req.body.product.leafCatId,
+          },
+        });
         next();
-    }
+      }
+    });
+  } else {
+    next();
+  }
 };
 
 let updateProduct = (req, res) => {
-    let product = req.body.product;
-    
-    productSchema.findOne({_id: req.body.productId}, (err, oldProduct) => {
-        if (err) {
-            console.log("Error fetching old product data:", err);
-        }
-        
-        req.data.oldProduct = oldProduct;
-        
-        let updateProductDetails = {
-            name: product.name.toLowerCase(),
-            _name: utility.removeSpecialCharAndDash(product.name.toLowerCase()),
-            description: product.description ? product.description : null,
-            lDescription: product.description
-                ? utility.removeSpecialChar(product.description)
-                : null,
-            shortDesc: product.shortDesc ? product.shortDesc : null,
-            lShortDesc: product.shortDesc
-                ? utility.removeSpecialChar(product.shortDesc)
-                : null,
-            urlKey: product.urlKey,
-            sellPrice: product.price,
-            price: product.mrp,
-            brand: {
-                name: product.brand.name ? product.brand.name : null,
-                id: product.brand._id
-                    ? mongoose.Types.ObjectId(product.brand._id)
-                    : null,
-            },
-            subBrand: {
-                name: product.subBrand.name ? product.subBrand.name : null,
-                id: product.subBrand._id
-                    ? mongoose.Types.ObjectId(product.subBrand._id)
-                    : null,
-            },
-            shipping: product.shipping ? product.shipping : null,
-            seo: product.seo ? product.seo : null,
-            categoryId: mongoose.Types.ObjectId(product.leafCatId),
-            categories: mongoose.Types.ObjectId(product.leafCatId),
-            tags: product.tags,
-            hsnCode: product.hsnCode.toString(),
-            updated: new Date().getTime(),
-            isSubscription: product.isSubscription ? true : false,
-            isOrder: product.isOrder ? true : false,
-            isMorningBuy: product.isMorningBuy ? true : false,
-            membershipPrice: product.membershipPrice,
-            gst: product.gst,
-            gstDesc: product.gstDesc ? product.gstDesc : null,
-            recommendedAttribute: product.recommendedAttribute
-                ? product.recommendedAttribute
-                : null,
-            isLastBuy: product.isLastBuying ? true : false,
-            purchasePrice: product.purchasePrice,
-            minSellPrice: product.minSellPrice,
-            barCode: product.barCode,
-            altBarCodes: product.altBarCodes
-                ? product.altBarCodes.map((code) => code.toLowerCase())
-                : [],
-        };
-        
-        let condition = {
-            _id: req.body.productId,
-        };
-        let update = {
-            $set: updateProductDetails,
-        };
-        if (product.images?.length > 0) {
-            update.$set.images = product.images;
-        }
-        
-        productSchema.findOneAndUpdate(condition, update, (err, updated) => {
-            if (err) {
-                return res.status(400).json({
-                    error: true,
-                    message: "error accured in hold product",
-                    success: false,
-                    error: err,
-                });
-            } else if (updated) {
-                const modifiedFields = {};
-                
-                if (req.data.oldProduct) {
-                    Object.keys(updateProductDetails).forEach(key => {
-                        if (JSON.stringify(req.data.oldProduct[key]) !== JSON.stringify(updateProductDetails[key])) {
-                            modifiedFields[key] = {
-                                // oldValue: req.data.oldProduct[key],
-                                newValue: updateProductDetails[key]
-                            };
-                        }
-                    });
-                }
-                
-                panelTrack.create({
-                    adminId: req.decoded.id,
-                    message: `Product updated by ${req.decoded.role}`,
-                    type: "productUpdate",
-                    productId: req.body.productId,
-                    data: modifiedFields
-                });
-                
-                res.status(200).json({
-                    success: true,
-                    message:
-                        "updated successfully." +
-                        req.data.barCodeMessage +
-                        (req.data.skuMessage ? req.data.skuMessage : ""),
-                });
-            } else {
-                return res
-                    .status(201)
-                    .json({ success: false, message: "already updated" });
-            }
+  let product = req.body.product;
+
+  productSchema.findOne({ _id: req.body.productId }, (err, oldProduct) => {
+    if (err) {
+      console.log("Error fetching old product data:", err);
+    }
+
+    req.data.oldProduct = oldProduct;
+
+    let updateProductDetails = {
+      name: product.name.toLowerCase(),
+      _name: utility.removeSpecialCharAndDash(product.name.toLowerCase()),
+      description: product.description ? product.description : null,
+      lDescription: product.description
+        ? utility.removeSpecialChar(product.description)
+        : null,
+      shortDesc: product.shortDesc ? product.shortDesc : null,
+      lShortDesc: product.shortDesc
+        ? utility.removeSpecialChar(product.shortDesc)
+        : null,
+      urlKey: product.urlKey,
+      sellPrice: product.price,
+      price: product.mrp,
+      brand: {
+        name: product.brand.name ? product.brand.name : null,
+        id: product.brand._id
+          ? new mongoose.Types.ObjectId(product.brand._id)
+          : null,
+      },
+      subBrand: {
+        name: product.subBrand.name ? product.subBrand.name : null,
+        id: product.subBrand._id
+          ? new mongoose.Types.ObjectId(product.subBrand._id)
+          : null,
+      },
+      shipping: product.shipping ? product.shipping : null,
+      seo: product.seo ? product.seo : null,
+      categoryId: new mongoose.Types.ObjectId(product.leafCatId),
+      categories: new mongoose.Types.ObjectId(product.leafCatId),
+      tags: product.tags,
+      hsnCode: product.hsnCode.toString(),
+      updated: new Date().getTime(),
+      isSubscription: product.isSubscription ? true : false,
+      isOrder: product.isOrder ? true : false,
+      isMorningBuy: product.isMorningBuy ? true : false,
+      membershipPrice: product.membershipPrice,
+      gst: product.gst,
+      gstDesc: product.gstDesc ? product.gstDesc : null,
+      recommendedAttribute: product.recommendedAttribute
+        ? product.recommendedAttribute
+        : null,
+      isLastBuy: product.isLastBuying ? true : false,
+      purchasePrice: product.purchasePrice,
+      minSellPrice: product.minSellPrice,
+      barCode: product.barCode,
+      altBarCodes: product.altBarCodes
+        ? product.altBarCodes.map((code) => code.toLowerCase())
+        : [],
+    };
+
+    let condition = {
+      _id: req.body.productId,
+    };
+    let update = {
+      $set: updateProductDetails,
+    };
+    if (product.images?.length > 0) {
+      update.$set.images = product.images;
+    }
+
+    productSchema.findOneAndUpdate(condition, update, (err, updated) => {
+      if (err) {
+        return res.status(400).json({
+          error: true,
+          message: "error accured in hold product",
+          success: false,
+          error: err,
         });
+      } else if (updated) {
+        const modifiedFields = {};
+
+        if (req.data.oldProduct) {
+          Object.keys(updateProductDetails).forEach((key) => {
+            if (
+              JSON.stringify(req.data.oldProduct[key]) !==
+              JSON.stringify(updateProductDetails[key])
+            ) {
+              modifiedFields[key] = {
+                // oldValue: req.data.oldProduct[key],
+                newValue: updateProductDetails[key],
+              };
+            }
+          });
+        }
+
+        panelTrack.create({
+          adminId: req.decoded.id,
+          message: `Product updated by ${req.decoded.role}`,
+          type: "productUpdate",
+          productId: req.body.productId,
+          data: modifiedFields,
+        });
+
+        res.status(200).json({
+          success: true,
+          message:
+            "updated successfully." +
+            req.data.barCodeMessage +
+            (req.data.skuMessage ? req.data.skuMessage : ""),
+        });
+      } else {
+        return res
+          .status(201)
+          .json({ success: false, message: "already updated" });
+      }
     });
+  });
 };
 module.exports = [
-    validate(validation.updateProduct),
-    validateHsnCode,
-    findBarcodeAndUpdate,
-    checkLeafCategory,
-    // findProductSku,
-    // findSKUAndUpdate,
-    updateCategoryIdInSellerProduct,
-    updateProduct,
+  validate(validation.updateProduct),
+  validateHsnCode,
+  findBarcodeAndUpdate,
+  checkLeafCategory,
+  // findProductSku,
+  // findSKUAndUpdate,
+  updateCategoryIdInSellerProduct,
+  updateProduct,
 ];

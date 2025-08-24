@@ -8,7 +8,7 @@ const buttonActions = {
     let condition = [
       {
         $match: {
-          userId: mongoose.Types.ObjectId(userId),
+          userId: new mongoose.Types.ObjectId(userId),
         },
       },
       {
@@ -46,7 +46,9 @@ const buttonActions = {
           tickets: order,
         });
       } else {
-        return res.status(201).json({ success: false, message: "order  not found" });
+        return res
+          .status(201)
+          .json({ success: false, message: "order  not found" });
       }
     });
   },

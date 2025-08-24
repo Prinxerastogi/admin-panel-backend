@@ -58,7 +58,7 @@
         "moment-timezone": "^0.5.27",
         "mongodb": "^6.11.0",
         "mongoosastic": "^4.6.0",
-        "mongoose": "^5.9.10",
+        "mongoose": "^8.17.0",
         "mongoose-double": "0.0.1",
         "mongoose-sequence": "^4.0.1",
         "morgan": "^1.9.1",

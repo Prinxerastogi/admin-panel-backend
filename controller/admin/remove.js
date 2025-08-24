@@ -1,14 +1,14 @@
 "use strict";
 let schema = require("../../sharedmb/schema/admin"),
-    crud = require("../../sharedmb/models/crud"),
-    mongoose = require("mongoose"),
-    acl = require("../myModule/aclModule");
+  crud = require("../../sharedmb/models/crud"),
+  mongoose = require("mongoose"),
+  acl = require("../myModule/aclModule");
 
 // let findAdmin = (req, res, next) => {
 //     let condition = [
 //         {
 //             $match: {
-//                 _id: mongoose.Types.ObjectId(req.query.adminId)
+//                 _id: new mongoose.Types.ObjectId(req.query.adminId)
 //             }
 //         },
 //         {
@@ -49,35 +49,35 @@ let schema = require("../../sharedmb/schema/admin"),
 // };
 
 let updateAdmin = (req, res) => {
-    crud.updateOne(
-        { _id: req.query.adminId },
-        {
-            $set: {
-                isDeleted: true,
-                roleId: null,
-                updated: new Date().getTime(),
-            },
-        },
-        {},
-        schema,
-        (err, updated) => {
-            if (err) {
-                return res.status(400).json({
-                    success: false,
-                    message: "error occured in addUserRole",
-                    err,
-                });
-            } else {
-                return res
-                    .status(200)
-                    .json({ success: true, message: "admin removed" });
-            }
-        }
-    );
+  crud.updateOne(
+    { _id: req.query.adminId },
+    {
+      $set: {
+        isDeleted: true,
+        roleId: null,
+        updated: new Date().getTime(),
+      },
+    },
+    {},
+    schema,
+    (err, updated) => {
+      if (err) {
+        return res.status(400).json({
+          success: false,
+          message: "error occured in addUserRole",
+          err,
+        });
+      } else {
+        return res
+          .status(200)
+          .json({ success: true, message: "admin removed" });
+      }
+    }
+  );
 };
 
 module.exports = [
-    // findAdmin,
-    // removeUserRoles,
-    updateAdmin,
+  // findAdmin,
+  // removeUserRoles,
+  updateAdmin,
 ];
