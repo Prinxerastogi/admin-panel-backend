@@ -54,7 +54,7 @@ const Brand = mongoose.model("Brand", brandSchema);
 //     console.error("Failed to start synchronization:", err);
 // }
 
-mongoose.set("useCreateIndex", true);
+
 brandSchema.index({ _id: -1, id: -1 });
 
 module.exports = Brand;

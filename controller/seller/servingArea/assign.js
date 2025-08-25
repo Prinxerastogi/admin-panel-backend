@@ -83,7 +83,7 @@ let assignServeArea = (req, res) => {
   sellerSchema.updateOne(condition, payload, (err, updateRes) => {
     if (err) {
       res.status(400).json({ err: true, message: err.message });
-    } else if (updateRes.nModified > 0) {
+    } else if (updateRes.modifiedCount > 0) {
       res.status(200).json({
         success: true,
         message: "serve area added successfully",

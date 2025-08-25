@@ -8,7 +8,7 @@ const config = require("config");
 mongoose.connect(config.database, {
     useNewUrlParser: true,
     useUnifiedTopology: true,
-    keepAlive: true,
+    // keepAlive: true,
 });
 
 console.log("MongoDB Connection:", config.database);

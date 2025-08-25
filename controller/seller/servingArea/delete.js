@@ -44,7 +44,7 @@ let removeSellerServeArea = (req, res, next) => {
     sellerSchema.updateOne(condition, payload, (err, response) => {
       if (err) {
         return res.status(400).json({ err: true, message: err.message });
-      } else if (response.nModified > 0) {
+      } else if (response.modifiedCount > 0) {
         next();
       } else {
         res.status(200).json({
@@ -74,7 +74,7 @@ let deleteServeArea = (req, res) => {
   serveAreaSchema.updateOne(condition, data, (err, deleteRes) => {
     if (err) {
       res.status(400).json({ err: true, message: err.message });
-    } else if (deleteRes.nModified > 0) {
+    } else if (deleteRes.modifiedCount > 0) {
       res.status(200).send({
         success: true,
         message: "serve area deleted successfully",

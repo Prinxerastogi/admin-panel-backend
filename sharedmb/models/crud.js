@@ -64,10 +64,8 @@ module.exports.update = function (condition, data, options, schema, callBack) {
 };
 
 module.exports.aggregation = function (conditions, schema, callback) {
-  schema.aggregate(conditions, function (error, data) {
-    if (error) callback(error, null);
-    else callback(null, data);
-  });
+const promise = schema.aggregate(conditions).exec();
+promise.then((data)=>callback(null, data)).catch((error)=>callback(error,null))
 };
 
 module.exports.insertMany = function (data, Option, schema, callback) {
@@ -117,11 +115,9 @@ module.exports.findOneAndUpdate = function (
 };
 
 module.exports.findOne = function (condition, schema, callBack) {
-  schema.findOne(condition, function (error, data) {
-    if (error) callBack(error, null);
-    else callBack(null, data);
-  });
-};
+const promise =schema.findOne(condition).exec();
+promise.then((data)=>callBack(null, data)).catch((error)=>callBack(error,null))
+  };
 
 module.exports.findOneAndRemove = function (conditions, schema, callback) {
   schema.findOneAndRemove(conditions, function (error, category) {
@@ -137,13 +133,10 @@ module.exports.updateOne = function (
   schema,
   callBack
 ) {
-  schema.updateOne(condition, data, options, function (error, data) {
-    if (error) {
-      callBack(error, null);
-    } else {
-      callBack(null, data);
-    }
-  });
+  const promise = schema.updateOne(condition, data, options).exec();
+  promise
+      .then((result) => callBack(null, result))
+      .catch((error) => callBack(error, null));
 };
 
 module.exports.addPath = function (path, schema, callBack) {

@@ -139,7 +139,7 @@ let addProduct = async (req, res) => {
     });
 
     let response = await productSchema.bulkWrite(bulkUpdate);
-    if (response.nModified > 0 || response.nInserted > 0) {
+    if (response.modifiedCount > 0 || response.nInserted > 0) {
       res.status(200).json({
         success: true,
         message: "products inserted successfully",

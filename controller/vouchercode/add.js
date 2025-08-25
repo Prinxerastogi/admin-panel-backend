@@ -124,7 +124,7 @@ let updatevoucherCodeCashRequest = (req, res) => {
           err,
         });
       }
-      if (updated.n > 0 && updated.nModified > 0) {
+      if (updated.n > 0 && updated.modifiedCount > 0) {
         if (utility.isEmail(req.data.request.user.email)) {
           sendEmail(req, res);
         } else {

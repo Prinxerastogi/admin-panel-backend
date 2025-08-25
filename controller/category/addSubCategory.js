@@ -565,14 +565,14 @@ let findParentAndUpdate = (req, res, next) => {
           message: MESSAGE.addsubcategory.updateerror,
           error: err,
         });
-      } else if (updateMany.nModified > 0 && updateMany.n > 0) {
+      } else if (updateMany.modifiedCount > 0 && updateMany.n > 0) {
         res.status(200).json({
           message: MESSAGE.addsubcategory.updatesuccess,
           success: true,
           response: response,
         });
         next();
-      } else if (updateMany.nModified == 0 && updateMany.n == 0) {
+      } else if (updateMany.modifiedCount == 0 && updateMany.n == 0) {
         return res.status(200).json({
           message: MESSAGE.addsubcategory.notadded,
           success: false,

@@ -12,7 +12,7 @@ mongoose
     .connect(config.database, {
         useNewUrlParser: true,
         useUnifiedTopology: true,
-        keepAlive: true,
+        // keepAlive: true,
     })
     .then(() => {
         console.log("✅ Connected to MongoDB");

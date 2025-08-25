@@ -20,7 +20,7 @@ let setCity = (req, res) => {
         error: err,
         success: false,
       });
-    } else if (response.nModified > 0) {
+    } else if (response.modifiedCount > 0) {
       return res.status(200).json({ message: "city added", success: true });
     } else {
       return res

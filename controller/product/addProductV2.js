@@ -528,7 +528,7 @@ let updateParentProduct = (req, res) => {
         message: "something went wrong in child product",
         err,
       });
-    } else if (response.nModified > 0) {
+    } else if (response.modifiedCount > 0) {
       panelTrack.create({
         adminId: req.decoded.id,
         message: `Child product added to parent product by ${req.decoded.role}`,

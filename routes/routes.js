@@ -255,6 +255,7 @@ apiRoutes.post("/add/subbrand", controller.brand.addSubBrand);
 apiRoutes.post("/delete", controller.brand.deleteSubBrand);
 apiRoutes.delete("/brand/:id", controller.brand.remove);
 apiRoutes.get("/subbrands", controller.brand.subBrands); //not is use
+apiRoutes.put("/update/subbrand", controller.brand.updateSubBrand);
 
 apiRoutes.get("/offer/type", controller.offer.offerType);
 

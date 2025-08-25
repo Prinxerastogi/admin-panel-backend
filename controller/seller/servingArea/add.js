@@ -41,7 +41,7 @@ let updateServeAreaInCity = (req, res, next) => {
       (err, response) => {
         if (err) {
           res.status(400).json({ err: true, message: err.message });
-        } else if (response.nModified > 0) {
+        } else if (response.modifiedCount > 0) {
           res.status(200).send({
             success: true,
             message: "serve area updated successfully",

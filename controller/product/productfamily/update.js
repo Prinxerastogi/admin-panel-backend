@@ -30,7 +30,7 @@ let updateproductid = (req, res, next) => {
           message: MESSAGE.update.error,
           err: err,
         });
-      } else if (response.nModified == 0) {
+      } else if (response.modifiedCount == 0) {
         return res.status(201).json({
           success: false,
           message: MESSAGE.update.Alreadyadded,
@@ -60,7 +60,7 @@ let updateFamilyIdInProducts = (req, res) => {
         message: "erro occured in  updateFamilyIdInProducts",
         err,
       });
-    } else if (updated.n > 0 && updated.nModified > 0) {
+    } else if (updated.n > 0 && updated.modifiedCount > 0) {
       return res
         .status(200)
         .json({ success: true, message: MESSAGE.update.added });

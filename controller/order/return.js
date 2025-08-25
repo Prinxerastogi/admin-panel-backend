@@ -225,7 +225,7 @@ let updateUserWallet = (req, res, next) => {
           message: "error occured in updateUserWallet",
           err,
         });
-      } else if (walletUpdated.n > 0 && walletUpdated.nModified > 0) {
+      } else if (walletUpdated.n > 0 && walletUpdated.modifiedCount > 0) {
         next();
         // return res.status(200).json({ success: true, message: 'refund successfully', });
       } else {
@@ -265,7 +265,7 @@ let updateOrderreturnProducts = (req, res) => {
           message: "error occured in updateUserWallet",
           err,
         });
-      } else if (updated.n > 0 && updated.nModified > 0) {
+      } else if (updated.n > 0 && updated.modifiedCount > 0) {
         return res
           .status(200)
           .json({ success: true, message: "refund successfully" });

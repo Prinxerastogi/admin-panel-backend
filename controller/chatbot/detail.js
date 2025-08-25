@@ -42,7 +42,7 @@ let updateMsg = async (req, res) => {
 
     let response = await chatSchema.updateOne(condition, payload);
 
-    if (response.nModified > 0) {
+    if (response.modifiedCount > 0) {
       res.status(200).json({
         success: true,
         message: "chat detail found",

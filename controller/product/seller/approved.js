@@ -87,7 +87,7 @@ let approvalSellerAddedProduct = (req, res, next) => {
           message: MESSAGE.approved.error,
           error: err,
         });
-      } else if (updatedData.nModified > 0 && updatedData.n > 0) {
+      } else if (updatedData.modifiedCount > 0 && updatedData.n > 0) {
         // next();
 
         return res.status(200).json({

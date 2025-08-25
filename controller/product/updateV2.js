@@ -99,7 +99,7 @@ let findBarcodeAndUpdate = (req, res, next) => {
             message: "barcode udpate failed",
             err: err,
           });
-        } else if (response.nModified == 1) {
+        } else if (response.modifiedCount == 1) {
           console.log("barcode updated", response);
           req.data.barCodeMessage = "barcode updated. ";
           panelTrack.create({
@@ -251,7 +251,7 @@ let checkLeafCategory = (req, res, next) => {
 //                 productSchema.updateOne(condition, update, (err, response) => {
 //                     if (err) {
 //                         return res.status(400).json({ success: false, message: 'sku udpate failed', err: err });
-//                     } else if (response.nModified == 1) {
+//                     } else if (response.modifiedCount == 1) {
 //                         console.log("sku updated", response)
 //                         req.data.skuMessage = "sku updated."
 //                         next();

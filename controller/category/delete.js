@@ -86,7 +86,7 @@ let categoryDelete = (req, res, next) => {
           message: "error in categoryDelete ",
           err,
         });
-      } else if (deleted.n > 0 && deleted.nModified > 0) {
+      } else if (deleted.n > 0 && deleted.modifiedCount > 0) {
         next();
         //
       } else {
@@ -116,7 +116,7 @@ let removeChildFromCategory = (req, res) => {
           message: "error in categoryDelete ",
           err,
         });
-      } else if (deleted.n > 0 && deleted.nModified > 0) {
+      } else if (deleted.n > 0 && deleted.modifiedCount > 0) {
         return res.status(200).json({
           success: true,
           message: "category deleted successfully",
