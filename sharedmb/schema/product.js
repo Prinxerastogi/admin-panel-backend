@@ -258,17 +258,17 @@ model.createMapping({}, (err, mapping) => {
     }
 });
 
-let stream = model.synchronize();
-let count = 0;
-stream.on("data", function (err, doc) {
-    count++;
-});
-stream.on("close", function () {
-    console.log("indexed " + count + " documents!");
-});
-stream.on("error", function (err) {
-    console.log(err);
-});
+// let stream = model.synchronize();
+// let count = 0;
+// stream.on("data", function (err, doc) {
+//     count++;
+// });
+// stream.on("close", function () {
+//     console.log("indexed " + count + " documents!");
+// });
+// stream.on("error", function (err) {
+//     console.log(err);
+// });
 
 
 productSchema.index({ tags: 1 });
