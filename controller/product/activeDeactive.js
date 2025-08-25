@@ -50,7 +50,8 @@ let activeDeactive = (req, res, next) => {
         req.data = {};
         req.data.product = updated;
         panelTrack.create({
-          adminId: req.decoded.id,
+          userId: req.decoded.id,
+          userType:"admin",
           message: `Product ${
             req.body.status ? "activated" : "deactivated"
           } by ${req.decoded.role}`,
@@ -226,7 +227,8 @@ let saveSellerProduct = (req, res, next) => {
       });
     } else {
       panelTrack.create({
-        adminId: req.decoded.id,
+        userId: req.decoded.id,
+        userType:"admin",
         message: `Seller product created by ${req.decoded.role}`,
         type: "sellerProductCreate",
         productId: req.data.product._id,

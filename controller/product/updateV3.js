@@ -70,7 +70,8 @@ let updateProduct = (req, res) => {
                 
                 if (Object.keys(modifiedFields).length > 0) {
                     panelTrack.create({
-                        adminId: req.decoded.id ,
+                        userId: req.decoded.id ,
+                        userType:"admin",
                         message: `Product details updated by ${req.decoded.role}`,
                         type: "productUpdate",
                         productId: req.body.productId,

@@ -1,17 +1,14 @@
 let mongoose = require("mongoose");
 let Schema = mongoose.Schema;
+const { sellerTypes } = require("../models/logTypes");
 let panelTackSchema = new Schema(
     {
-        sellerId: {
-            type: Schema.Types.ObjectId,
-            ref: "sellerUser",
-        },
-        adminId: {
-            type: Schema.Types.ObjectId,
-            ref: "admin",
-        },
+      userType:{
+        type: String,
+      },
         type: {
             type: String,
+            enum: sellerTypes,
         },
         message: {
             type: String,
@@ -43,7 +40,7 @@ let panelTackSchema = new Schema(
         userId: Schema.Types.ObjectId,
     },
     {
-        timestamps: true, 
+        timestamps: true,
     }
 );
 module.exports = mongoose.model("panelTack", panelTackSchema);
