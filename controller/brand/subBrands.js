@@ -5,79 +5,79 @@ let validation = require("./validation");
 let mongoose = require("mongoose");
 
 module.exports = [
-    validate(validation.view),
-    (req, res) => {
-        let pagination = {
-            page: Number(req.query.start),
-            limit: Number(req.query.end),
-        };
-        let condition = [
-            {
-                $match: {
-                    _id: mongoose.Types.ObjectId(req.query.brandId),
-                },
-            },
-            {
-                $lookup: {
-                    from: "brands",
-                    localField: "childIds",
-                    foreignField: "_id",
-                    as: "subBrands",
-                },
-            },
-            {
-                $addFields: {
-                    "subBrands.subbandTotal": {
-                        $size: "$subBrands",
-                    },
-                },
-            },
-            {
-                $unwind: {
-                    path: "$subBrands",
-                },
-            },
-            {
-                $replaceRoot: {
-                    newRoot: "$subBrands",
-                },
-            },
-        ];
+  validate(validation.view),
+  (req, res) => {
+    let pagination = {
+      page: Number(req.query.start),
+      limit: Number(req.query.end),
+    };
+    let condition = [
+      {
+        $match: {
+          _id: new mongoose.Types.ObjectId(req.query.brandId),
+        },
+      },
+      {
+        $lookup: {
+          from: "brands",
+          localField: "childIds",
+          foreignField: "_id",
+          as: "subBrands",
+        },
+      },
+      {
+        $addFields: {
+          "subBrands.subbandTotal": {
+            $size: "$subBrands",
+          },
+        },
+      },
+      {
+        $unwind: {
+          path: "$subBrands",
+        },
+      },
+      {
+        $replaceRoot: {
+          newRoot: "$subBrands",
+        },
+      },
+    ];
 
-        if (
-            req.query.start != null &&
-            req.query.end != null &&
-            req.query.start.length > 0 &&
-            req.query.end.length > 0
-        ) {
-            condition.push(
-                {
-                    $skip: pagination.page * pagination.limit,
-                },
-                {
-                    $limit: pagination.limit,
-                }
-            );
+    if (
+      req.query.start != null &&
+      req.query.end != null &&
+      req.query.start.length > 0 &&
+      req.query.end.length > 0
+    ) {
+      condition.push(
+        {
+          $skip: pagination.page * pagination.limit,
+        },
+        {
+          $limit: pagination.limit,
         }
-        crudModel.aggregation(condition, brandSchema, (err, brand) => {
-            if (err) {
-                return res.status(400).json({
-                    error: true,
-                    success: false,
-                    message: "error accured show barnd",
-                    error: err,
-                });
-            } else if (brand && brand.length > 0) {
-                return res.status(200).json({
-                    success: true,
-                    message: `${brand.length}`,
-                    brand: brand,
-                });
-            } else {
-                return res
-                    .status(201)
-                    .json({ success: false, message: "no brand found" });
-            }
+      );
+    }
+    crudModel.aggregation(condition, brandSchema, (err, brand) => {
+      if (err) {
+        return res.status(400).json({
+          error: true,
+          success: false,
+          message: "error accured show barnd",
+          error: err,
         });
-    },
+      } else if (brand && brand.length > 0) {
+        return res.status(200).json({
+          success: true,
+          message: `${brand.length}`,
+          brand: brand,
+        });
+      } else {
+        return res
+          .status(201)
+          .json({ success: false, message: "no brand found" });
+      }
+    });
+  },
 ];

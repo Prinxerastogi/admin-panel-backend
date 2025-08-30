@@ -2,7 +2,8 @@
 let crud = require("../../sharedmb/models/crud"),
     productSchema = require("../../sharedmb/schema/product"),
     config = require("config"),
-    mongoose = require("mongoose");
+    mongoose = require("mongoose"),
+    panelTrack = require("../../sharedmb/schema/panelTack");
 
 const copyProduct = async (req, res) => {
     try {
@@ -30,15 +31,40 @@ const copyProduct = async (req, res) => {
                 .json({ success: false, message: "Source product not found" });
         }
 
-        // Prepare the update object
+        const currentProduct = await productSchema.findById(currentProductId);
+        if (!currentProduct) {
+            return res
+                .status(404)
+                .json({ success: false, message: "Target product not found" });
+        }
+
         let updateData = {};
+        let modifiedFields = {};
+
         fieldsToCopy.forEach((field) => {
             if (copyFromProduct[field] !== undefined) {
-                updateData[field] = copyFromProduct[field];
+                const oldValue = currentProduct[field];
+                const newValue = copyFromProduct[field];
+                
+                if (JSON.stringify(oldValue) !== JSON.stringify(newValue)) {
+                    updateData[field] = newValue;
+                    modifiedFields[field] = {
+                        // oldValue: oldValue,
+                        newValue: newValue,
+                        copiedFrom: copyFromProductId
+                    };
+                }
             }
         });
 
-        // Update the current product
+        if (Object.keys(updateData).length === 0) {
+            return res.status(200).json({
+                success: true,
+                message: "No changes needed - values are already the same",
+                currentProduct
+            });
+        }
+
         const updatedProduct = await productSchema.findByIdAndUpdate(
             currentProductId,
             { $set: updateData },
@@ -51,10 +77,29 @@ const copyProduct = async (req, res) => {
                 .json({ success: false, message: "Target product not found" });
         }
 
+        await panelTrack.create({
+            userId: req.decoded.id,
+            userType: "admin",
+            message: `Product details copied from ${copyFromProduct.name} by ${req.decoded.role}`,
+            type: "productCopy",
+            productId: currentProductId,
+            sourceProductId: copyFromProductId,
+            data: {
+                copiedFields: Object.keys(modifiedFields),
+                fieldDetails: modifiedFields,
+                sourceProduct: {
+                    id: copyFromProductId,
+                    name: copyFromProduct.name,
+                    sku: copyFromProduct.sku
+                }
+            }
+        });
+
         return res.status(200).json({
             success: true,
             message: "Product details copied successfully",
             updatedProduct,
+            copiedFields: Object.keys(modifiedFields)
         });
     } catch (error) {
         console.error("Error copying product details:", error);

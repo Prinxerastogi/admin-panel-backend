@@ -245,6 +245,9 @@ apiRoutes.put("/product/update/v2", controller.product.updateV2);
 apiRoutes.put("/product/update/v3", controller.product.updateV3);
 apiRoutes.post("/product/findbarcode", controller.product.findBarcode);
 
+//panel track
+apiRoutes.get("/product/history", controller.panelTrack.productHistory);
+
 apiRoutes.get("/brands", controller.brand.show);
 apiRoutes.post("/brand", controller.brand.add);
 apiRoutes.put("/brand", controller.brand.update);
@@ -253,6 +256,7 @@ apiRoutes.post("/add/subbrand", controller.brand.addSubBrand);
 apiRoutes.post("/delete", controller.brand.deleteSubBrand);
 apiRoutes.delete("/brand/:id", controller.brand.remove);
 apiRoutes.get("/subbrands", controller.brand.subBrands); //not is use
+apiRoutes.put("/update/subbrand", controller.brand.updateSubBrand);
 
 apiRoutes.get("/offer/type", controller.offer.offerType);
 

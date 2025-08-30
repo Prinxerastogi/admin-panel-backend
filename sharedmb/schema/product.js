@@ -36,16 +36,15 @@ let productSchema = new Schema({
     isParent: { type: Boolean, default: true },
     childProducts: [
         {
-            es_indexed: false,
+
             productId: {
                 type: Schema.Types.ObjectId,
                 default: null,
-                es_indexed: false,
             },
             recommendedAttribute: {
                 type: String,
                 lowercase: true,
-                es_indexed: false,
+            
             },
         },
     ],
@@ -54,7 +53,7 @@ let productSchema = new Schema({
         onDoorPrice: Number,
         withBagPrice: Number,
         withBottlePrice: Number,
-        es_indexed: false,
+    
     },
     seo: {
         metaTitle: { type: String, es_indexed: false },
@@ -73,7 +72,7 @@ let productSchema = new Schema({
                 src: String,
             },
         ],
-        es_indexed: false,
+       
     },
     searchingNumber: { type: Number, default: 0 }, //grocery
     offer: Number, //grocery
@@ -113,13 +112,13 @@ let productSchema = new Schema({
         },
         weight: { type: Number, default: 0 },
         weightUnit: { type: String, default: "grm" },
-        es_indexed: false,
+        
     },
     attrs: [
         {
             name: { type: String, lowercase: true },
             value: [String],
-            es_indexed: false,
+            
         },
     ], //grocery
     variants: {
@@ -129,13 +128,12 @@ let productSchema = new Schema({
                 name: { type: String, lowercase: true },
             },
         ],
-        es_indexed: false,
+        
     },
     verification: {
         isImageVerify: { type: Boolean, default: false },
         isproductDetailVerify: { type: Boolean, default: false },
-        isApproved: { type: Boolean, default: false, es_indexed: false },
-        es_indexed: false,
+        isApproved: { type: Boolean, default: false, es_indexed: true },
     },
     approvedBy: { type: Schema.Types.ObjectId },
     isHold: { type: Boolean, default: false },
@@ -166,7 +164,7 @@ let productSchema = new Schema({
             type: Number,
             default: 0,
         },
-        es_indexed: false,
+        
     },
     sizeUnit: {
         type: String,
@@ -209,7 +207,7 @@ let productSchema = new Schema({
             merchantId: { type: String },
             lastPrice: Number,
         },
-        es_indexed: false,
+        
     },
     purchasePrice: Number,
     manufacturerDetails: { type: String, lowercase: true },
@@ -270,7 +268,7 @@ model.createMapping({}, (err, mapping) => {
 //     console.log(err);
 // });
 
-mongoose.set("useCreateIndex", true);
+
 productSchema.index({ tags: 1 });
 productSchema.index({ _id: -1, id: -1 });
 module.exports = mongoose.model("product", productSchema);

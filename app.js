@@ -17,7 +17,7 @@ mongoose.connect(config.database, {
     useNewUrlParser: true,
     useUnifiedTopology: true,
     socketTimeoutMS: 0,
-    keepAlive: true,
+    // keepAlive: true,
     // reconnectTries: 30
 });
 console.log("MongoDb Connection: ", config.database);
@@ -142,7 +142,7 @@ app.use(
         parameterLimit: 50000,
     })
 );
-mongoose.set("useCreateIndex", true);
+// mongoose.set("useCreateIndex", true);
 app.get("/socket.io", (req, res) => {
     console.log("Headers:", req.headers);
     res.status(404).send("Not Found");

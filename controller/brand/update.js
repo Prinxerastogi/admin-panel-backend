@@ -95,7 +95,7 @@ let updateBrands = (req, res, next) => {
                 return res
                     .status(400)
                     .json({ success: false, message: "error", err });
-            } else if (updated.nModified > 0) {
+            } else if (updated.modifiedCount  > 0) {
                 return res
                     .status(200)
                     .json({ success: true, message: "updated successfully" });

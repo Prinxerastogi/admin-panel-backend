@@ -107,7 +107,6 @@ const Category = mongoose.model("Category", categorySchema);
 // });
 
 // Create indexes
-mongoose.set("useCreateIndex", true);
 categorySchema.index({ _id: -1, id: -1 });
 
 module.exports = Category;

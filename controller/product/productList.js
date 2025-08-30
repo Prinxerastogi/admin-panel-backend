@@ -47,24 +47,32 @@ let getProducts = (req, res, next) => {
         },
         {
           $match: {
-            "subCategory.parentId": mongoose.Types.ObjectId(req.query.rootCategoryId),
+            "subCategory.parentId": new mongoose.Types.ObjectId(
+              req.query.rootCategoryId
+            ),
           },
         }
       );
     } else {
-      filter["subCategory.parentId"] = mongoose.Types.ObjectId(req.query.rootCategoryId);
+      filter["subCategory.parentId"] = new mongoose.Types.ObjectId(
+        req.query.rootCategoryId
+      );
     }
   }
   if (req.query.leafCategoryId) {
-    filter["leafCategory._id"] = mongoose.Types.ObjectId(req.query.leafCategoryId);
+    filter["leafCategory._id"] = new mongoose.Types.ObjectId(
+      req.query.leafCategoryId
+    );
   }
   if (req.query.subCategoryId) {
-    filter["subCategory._id"] = mongoose.Types.ObjectId(req.query.subCategoryId);
+    filter["subCategory._id"] = new mongoose.Types.ObjectId(
+      req.query.subCategoryId
+    );
   }
   if (req.query.subBrandId) {
-    filter["subBrand.id"] = mongoose.Types.ObjectId(req.query.subBrandId);
+    filter["subBrand.id"] = new mongoose.Types.ObjectId(req.query.subBrandId);
   } else if (req.query.brandId) {
-    filter["brand.id"] = mongoose.Types.ObjectId(req.query.brandId);
+    filter["brand.id"] = new mongoose.Types.ObjectId(req.query.brandId);
   }
   if (req.query.isActive) {
     filter["isActive"] = req.query.isActive == "true" ? true : false;
@@ -76,20 +84,24 @@ let getProducts = (req, res, next) => {
     filter["isHold"] = req.query.isHold == "true" ? true : false;
   }
   if (req.query.isSubscription) {
-    filter["isSubscription"] = req.query.isSubscription == "true" ? true : false;
+    filter["isSubscription"] =
+      req.query.isSubscription == "true" ? true : false;
   }
   console.log("filter", req.query);
   if (req.query.faq) {
     filter["faq"] = req.query.faq === "false" ? { $eq: null } : { $ne: null };
   }
   if (req.query.usage) {
-    filter["howToUse"] = req.query.usage === "false" ? { $eq: null } : { $ne: null };
+    filter["howToUse"] =
+      req.query.usage === "false" ? { $eq: null } : { $ne: null };
   }
   if (req.query.benefits) {
-    filter["benefits"] = req.query.benefits === "false" ? { $eq: null } : { $ne: null };
+    filter["benefits"] =
+      req.query.benefits === "false" ? { $eq: null } : { $ne: null };
   }
   if (req.query.nutrition) {
-    filter["nutritionalFacts"] = req.query.nutrition === "false" ? { $eq: null } : { $ne: null };
+    filter["nutritionalFacts"] =
+      req.query.nutrition === "false" ? { $eq: null } : { $ne: null };
   }
   aggregate.push({
     $match: filter,
@@ -124,10 +136,10 @@ let getProducts = (req, res, next) => {
         $cond: {
           if: { $isArray: "$images" },
           then: { $size: "$images" },
-          else: 0
-        }
-      }
-    }
+          else: 0,
+        },
+      },
+    },
   });
 
   let paginate = [
@@ -148,7 +160,7 @@ let getProducts = (req, res, next) => {
           },
         },
       },
-    }
+    },
   ];
 
   if (req.query.images === "true") {
@@ -196,7 +208,9 @@ let getProducts = (req, res, next) => {
         products: products,
       });
     } else {
-      return res.status(201).json({ success: false, message: "no product found" });
+      return res
+        .status(201)
+        .json({ success: false, message: "no product found" });
     }
   });
 };
