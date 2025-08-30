@@ -1,206 +1,209 @@
 let mongoose = require("mongoose");
 
 module.exports.create = function (data, schema, callBack) {
-  schema.create(data, function (error, data) {
-    if (error) {
-      callBack(error, null);
-    } else {
-      callBack(null, data);
-    }
-  });
+    schema.create(data, function (error, data) {
+        if (error) {
+            callBack(error, null);
+        } else {
+            callBack(null, data);
+        }
+    });
 };
 
 module.exports.find = function (data, schema, callBack) {
-  schema.find(data, function (error, data) {
-    if (error) callBack(error, null);
-    else callBack(null, data);
-  });
+    schema.find(data, function (error, data) {
+        if (error) callBack(error, null);
+        else callBack(null, data);
+    });
 };
 
 module.exports.findById = function (id, schema, callBack) {
-  schema.findById(id, function (error, data) {
-    if (error) {
-      callBack(error, null);
-    } else {
-      callBack(null, data);
-    }
-  });
+    schema.findById(id, function (error, data) {
+        if (error) {
+            callBack(error, null);
+        } else {
+            callBack(null, data);
+        }
+    });
 };
 
-module.exports.findByIdAndUpdate = function (
-  id,
-  data,
-  options,
-  schema,
-  callBack
+module.exports.findByIdAndUpdate = async function (
+    id,
+    data,
+    options,
+    schema,
+    callBack
 ) {
-  schema.findByIdAndUpdate(id, data, options, function (error, data) {
-    if (error) {
-      callBack(error, null);
-    } else {
-      callBack(null, data);
+    try {
+        const result = await schema.findByIdAndUpdate(id, data, options);
+        callBack(null, result);
+    } catch (error) {
+        callBack(error, null);
     }
-  });
 };
 
 module.exports.findByIdAndRemove = function (id, schema, callBack) {
-  schema.findByIdAndRemove(id, function (error, data) {
-    if (error) {
-      callBack(error, null);
-    } else {
-      callBack(null, data);
-    }
-  });
+    schema.findByIdAndRemove(id, function (error, data) {
+        if (error) {
+            callBack(error, null);
+        } else {
+            callBack(null, data);
+        }
+    });
 };
 
 module.exports.update = function (condition, data, options, schema, callBack) {
-  schema.update(condition, data, options, function (error, data) {
-    if (error) {
-      callBack(error, null);
-    } else {
-      callBack(null, data);
-    }
-  });
+    schema.update(condition, data, options, function (error, data) {
+        if (error) {
+            callBack(error, null);
+        } else {
+            callBack(null, data);
+        }
+    });
 };
 
 module.exports.aggregation = function (conditions, schema, callback) {
-const promise = schema.aggregate(conditions).exec();
-promise.then((data)=>callback(null, data)).catch((error)=>callback(error,null))
+    const promise = schema.aggregate(conditions).exec();
+    promise
+        .then((data) => callback(null, data))
+        .catch((error) => callback(error, null));
 };
 
 module.exports.insertMany = function (data, Option, schema, callback) {
-  schema.insertMany(data, Option, function (error, data) {
-    if (error) {
-      callback(error, null);
-    } else {
-      callback(null, data);
-    }
-  });
+    schema.insertMany(data, Option, function (error, data) {
+        if (error) {
+            callback(error, null);
+        } else {
+            callback(null, data);
+        }
+    });
 };
 
 module.exports.insert = function (data, Option, schema, callback) {
-  schema.insert(data, Option, function (error, data) {
-    if (error) {
-      callback(error, null);
-    } else {
-      callback(null, data);
-    }
-  });
+    schema.insert(data, Option, function (error, data) {
+        if (error) {
+            callback(error, null);
+        } else {
+            callback(null, data);
+        }
+    });
 };
 
 module.exports.insertOne = function (data, Option, schema, callback) {
-  schema.insertOne(data, Option, function (error, data) {
-    if (error) {
-      callback(error, null);
-    } else {
-      callback(null, data);
-    }
-  });
+    schema.insertOne(data, Option, function (error, data) {
+        if (error) {
+            callback(error, null);
+        } else {
+            callback(null, data);
+        }
+    });
 };
 
 module.exports.findOneAndUpdate = function (
-  condition,
-  update,
-  options,
-  schema,
-  callBack
+    condition,
+    update,
+    options,
+    schema,
+    callBack
 ) {
-  schema.findOneAndUpdate(condition, update, options, function (error, data) {
-    if (error) {
-      callBack(error, null);
-    } else {
-      callBack(null, data);
-    }
-  });
+    schema.findOneAndUpdate(condition, update, options, function (error, data) {
+        if (error) {
+            callBack(error, null);
+        } else {
+            callBack(null, data);
+        }
+    });
 };
 
 module.exports.findOne = function (condition, schema, callBack) {
-const promise =schema.findOne(condition).exec();
-promise.then((data)=>callBack(null, data)).catch((error)=>callBack(error,null))
-  };
+    const promise = schema.findOne(condition).exec();
+    promise
+        .then((data) => callBack(null, data))
+        .catch((error) => callBack(error, null));
+};
 
 module.exports.findOneAndRemove = function (conditions, schema, callback) {
-  schema.findOneAndRemove(conditions, function (error, category) {
-    if (error) callback(error, null);
-    else callback(null, category);
-  });
+    schema.findOneAndRemove(conditions, function (error, category) {
+        if (error) callback(error, null);
+        else callback(null, category);
+    });
 };
 
 module.exports.updateOne = function (
-  condition,
-  data,
-  options,
-  schema,
-  callBack
+    condition,
+    data,
+    options,
+    schema,
+    callBack
 ) {
-  const promise = schema.updateOne(condition, data, options).exec();
-  promise
-      .then((result) => callBack(null, result))
-      .catch((error) => callBack(error, null));
+    const promise = schema.updateOne(condition, data, options).exec();
+    promise
+        .then((result) => callBack(null, result))
+        .catch((error) => callBack(error, null));
 };
 
 module.exports.addPath = function (path, schema, callBack) {
-  schema.create({ path: path }, function (error, data) {
-    if (error) {
-      callBack(error, null);
-    } else {
-      callBack(null, data);
-    }
-  });
+    schema.create({ path: path }, function (error, data) {
+        if (error) {
+            callBack(error, null);
+        } else {
+            callBack(null, data);
+        }
+    });
 };
 
 module.exports.findProjectionOptionAndSort = function (
-  condition,
-  projection,
-  option,
-  schema,
-  callBack
+    condition,
+    projection,
+    option,
+    schema,
+    callBack
 ) {
-  schema.find(condition, projection, option, function (error, data) {
-    if (error) callBack(error, null);
-    else callBack(null, data);
-  });
+    schema.find(condition, projection, option, function (error, data) {
+        if (error) callBack(error, null);
+        else callBack(null, data);
+    });
 };
 
 module.exports.findOneProjectionOptionAndSort = function (
-  condition,
-  projection,
-  option,
-  schema,
-  callBack
+    condition,
+    projection,
+    option,
+    schema,
+    callBack
 ) {
-  schema.findOne(condition, projection, option, function (error, data) {
-    if (error) callBack(error, null);
-    else callBack(null, data);
-  });
+    schema.findOne(condition, projection, option, function (error, data) {
+        if (error) callBack(error, null);
+        else callBack(null, data);
+    });
 };
 
 module.exports.validId = function (id) {
-  return new mongoose.Types.ObjectId.isValid(id);
+    return new mongoose.Types.ObjectId.isValid(id);
 };
 
 module.exports.updateMany = function (
-  condition,
-  data,
-  options,
-  schema,
-  callBack
+    condition,
+    data,
+    options,
+    schema,
+    callBack
 ) {
-  schema.updateMany(condition, data, options, function (error, data) {
-    if (error) {
-      callBack(error, null);
-    } else {
-      callBack(null, data);
-    }
-  });
+    schema.updateMany(condition, data, options, function (error, data) {
+        if (error) {
+            callBack(error, null);
+        } else {
+            callBack(null, data);
+        }
+    });
 };
 
 module.exports.createWthOption = function (data, option, schema, callBack) {
-  schema.create(data, option, function (error, data) {
-    if (error) {
-      callBack(error, null);
-    } else {
-      callBack(null, data);
-    }
-  });
+    schema.create(data, option, function (error, data) {
+        if (error) {
+            callBack(error, null);
+        } else {
+            callBack(null, data);
+        }
+    });
 };
