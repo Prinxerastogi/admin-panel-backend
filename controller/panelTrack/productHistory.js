@@ -2,6 +2,7 @@ const express = require("express");
 const router = express.Router();
 const mongoose = require("mongoose");
 let panelTrack = require("../../sharedmb/schema/panelTack");
+
 const productHistory = async (req, res) => {
   try {
     const { productId } = req.query;
@@ -29,16 +30,38 @@ const productHistory = async (req, res) => {
       {
         $lookup: {
           from: "sellerusers",
-          localField: "sellerId",
-          foreignField: "_id",
+          let: { userId: "$userId", userType: "$userType" },
+          pipeline: [
+            {
+              $match: {
+                $expr: {
+                  $and: [
+                    { $eq: ["$$userType", "seller"] },
+                    { $eq: ["$_id", "$$userId"] }
+                  ]
+                }
+              }
+            }
+          ],
           as: "sellerInfo",
         },
       },
       {
         $lookup: {
           from: "admins",
-          localField: "adminId",
-          foreignField: "_id",
+          let: { userId: "$userId", userType: "$userType" },
+          pipeline: [
+            {
+              $match: {
+                $expr: {
+                  $and: [
+                    { $eq: ["$$userType", "admin"] },
+                    { $eq: ["$_id", "$$userId"] }
+                  ]
+                }
+              }
+            }
+          ],
           as: "adminInfo",
         },
       },
@@ -48,35 +71,24 @@ const productHistory = async (req, res) => {
           type: 1,
           message: 1,
           data: 1,
+          userType: 1,
           createdAt: 1,
           updatedAt: 1,
           userId: {
             $cond: {
-              if: { $gt: [{ $size: "$sellerInfo" }, 0] },
+              if: { $eq: ["$userType", "seller"] },
               then: { $arrayElemAt: ["$sellerInfo.userId", 0] },
               else: null,
             },
           },
           email: {
             $cond: {
-              if: { $gt: [{ $size: "$adminInfo" }, 0] },
+              if: { $eq: ["$userType", "admin"] },
               then: { $arrayElemAt: ["$adminInfo.email", 0] },
               else: null,
             },
           },
-          logType: {
-            $cond: {
-              if: { $gt: [{ $size: "$sellerInfo" }, 0] },
-              then: "seller",
-              else: {
-                $cond: {
-                  if: { $gt: [{ $size: "$adminInfo" }, 0] },
-                  then: "admin",
-                  else: "other",
-                },
-              },
-            },
-          },
+          logType: "$userType",
         },
       },
       {

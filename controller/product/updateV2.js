@@ -103,7 +103,8 @@ let findBarcodeAndUpdate = (req, res, next) => {
           console.log("barcode updated", response);
           req.data.barCodeMessage = "barcode updated. ";
           panelTrack.create({
-            adminId: req.decoded.id,
+            userId: req.decoded.id,
+            userType:"admin",
             message: `Product barcode updated by ${req.decoded.role}`,
             type: "productUpdate",
             productId: req.body.productId,
@@ -283,7 +284,8 @@ let updateCategoryIdInSellerProduct = (req, res, next) => {
         });
       } else {
         panelTrack.create({
-          adminId: req.decoded.id,
+          userId: req.decoded.id,
+          userType:"admin",
           message: `Product category updated in seller products by ${req.decoded.role}`,
           type: "productCategoryUpdate",
           productId: req.body.productId,
@@ -397,7 +399,8 @@ let updateProduct = (req, res) => {
         }
 
         panelTrack.create({
-          adminId: req.decoded.id,
+          userId: req.decoded.id,
+          userType:"admin",
           message: `Product updated by ${req.decoded.role}`,
           type: "productUpdate",
           productId: req.body.productId,

@@ -135,7 +135,6 @@ let productSchema = new Schema({
         isImageVerify: { type: Boolean, default: false },
         isproductDetailVerify: { type: Boolean, default: false },
         isApproved: { type: Boolean, default: false, es_indexed: true },
-        
     },
     approvedBy: { type: Schema.Types.ObjectId },
     isHold: { type: Boolean, default: false },

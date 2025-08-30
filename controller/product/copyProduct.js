@@ -78,7 +78,8 @@ const copyProduct = async (req, res) => {
         }
 
         await panelTrack.create({
-            adminId: req.decoded.id,
+            userId: req.decoded.id,
+            userType: "admin",
             message: `Product details copied from ${copyFromProduct.name} by ${req.decoded.role}`,
             type: "productCopy",
             productId: currentProductId,

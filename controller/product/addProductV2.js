@@ -274,7 +274,8 @@ let createProduct = (req, res, next) => {
         req.data = {};
         req.data.product = created;
         panelTrack.create({
-          adminId: req.decoded.id,
+          userId: req.decoded.id,
+          userType:"admin",
           message: `New product created by ${req.decoded.role}`,
           type: "productCreate",
           productId: created._id,
@@ -381,7 +382,8 @@ let updateImages = (req, res, next) => {
         });
       } else {
         panelTrack.create({
-          adminId: req.decoded.id,
+          userId: req.decoded.id,
+          userType:"admin", 
           message: `Product images added by ${req.decoded.role}`,
           type: "productImageUpdate",
           productId: req.data.product._id,
@@ -530,7 +532,8 @@ let updateParentProduct = (req, res) => {
       });
     } else if (response.modifiedCount > 0) {
       panelTrack.create({
-        adminId: req.decoded.id,
+        userId: req.decoded.id,
+        userType:"admin",
         message: `Child product added to parent product by ${req.decoded.role}`,
         type: "productRelationUpdate",
         productId: req.data.product._id,
