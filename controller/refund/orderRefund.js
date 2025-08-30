@@ -80,7 +80,7 @@ let checkRefundAmountFromOrderAmount = (req, res, next) => {
     const onlineAmount = req.data.order.paymentSource?.easeBuzz || 0;
     const walletAmount = req.data.order.paymentSource.wallet || 0;
     const refundableAmount =
-        (codAmount < 0 ? 0 : codAmount) + onlineAmount + walletAmount;
+        (codAmount > 0 ? codAmount : 0) + onlineAmount + walletAmount;
     if (req.data.totalRefundAmount > refundableAmount) {
         return res.status(201).json({
             success: false,
