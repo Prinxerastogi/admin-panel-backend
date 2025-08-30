@@ -28,17 +28,95 @@ module.exports = [
                         minSellPrice: 1,
                         storeMinQuantity: 1,
                         name: "$productInfo.name",
+                        leafCategory: "$productInfo.categoryId",
                         hsnCode: "$productInfo.hsnCode",
                         recommendedAttribute:
                             "$productInfo.recommendedAttribute",
                         description: "$productInfo.description",
-                        image: { $arrayElemAt: ["$productInfo.images", 0] },
+                        image: {
+                            $arrayElemAt: ["$productInfo.images", 0],
+                        },
                         sku: "$productInfo.sku",
                         barCode: "$productInfo.barCode",
                         hsnCode: "$productInfo.hsnCode",
-                        metaKeyword: "$productInfo.seo.metaKeyword",
+                        metaKeyword: "$productInfo.seo.metaKeywords",
                         metaTitle: "$productInfo.seo.metaTitle",
                         metaDescription: "$productInfo.seo.metaDescription",
+                        imageCount:{$size:"$productInfo.images"},
+                    },
+                },
+                {
+                    $graphLookup: {
+                        from: "categories",
+                        startWith: "$leafCategory",
+                        connectFromField: "parentId",
+                        connectToField: "_id",
+                        as: "categoryHierarchy",
+                        depthField: "level",
+                    },
+                },
+                {
+                    $addFields: {
+                        leafCategoryId: "$leafCategory",
+                        
+                        leafCategoryName: {
+                            $getField: {
+                                field: "name",
+                                input: {
+                                    $arrayElemAt: [
+                                        {
+                                            $filter: {
+                                                input: "$categoryHierarchy",
+                                                cond: {
+                                                    $eq: [
+                                                        "$$this._id",
+                                                        "$leafCategory",
+                                                    ],
+                                                },
+                                            },
+                                        },
+                                        0,
+                                    ],
+                                },
+                            },
+                        },
+                        subCategory: {
+                            $arrayElemAt: [
+                                {
+                                    $filter: {
+                                        input: "$categoryHierarchy",
+                                        cond: { $eq: ["$$this.level", 1] },
+                                    },
+                                },
+                                0,
+                            ],
+                        },
+                        rootCategory: {
+                            $arrayElemAt: [
+                                {
+                                    $filter: {
+                                        input: "$categoryHierarchy",
+                                        cond: { $eq: ["$$this.level", 2] },
+                                    },
+                                },
+                                0,
+                            ],
+                        },
+                    },
+                },
+                {
+                    $addFields: {
+                        subCategoryId: "$subCategory._id",
+                        subCategoryName: "$subCategory.name",
+                        rootCategoryId: "$rootCategory._id",
+                        rootCatName: "$rootCategory.name",
+                    },
+                },
+                {
+                    $project: {
+                        categoryHierarchy: 0,
+                        subCategory: 0,
+                        rootCategory: 0,
                     },
                 },
             ]);
@@ -61,6 +139,7 @@ module.exports = [
                 "storeMinQuantity",
                 "sellerProductId",
                 "sku",
+                "imageCount",
                 "barCode",
                 "hsnCode",
                 "recommendedAttribute",
@@ -69,6 +148,12 @@ module.exports = [
                 "metaTitle",
                 "metaKeyword",
                 "metaDescription",
+                "rootCategoryId",
+                "rootCatName",
+                "subCategoryId",
+                "subCategoryName",
+                "leafCategoryId",
+                "leafCategoryName",
             ];
 
             // Initialize the JSON to CSV parser

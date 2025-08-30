@@ -5,30 +5,34 @@ let mongoosastic = require("mongoosastic");
 let config = require("config");
 
 let brandSchema = new Schema({
-    name: { type: String },
-    _name: { type: String, lowercase: true },
-    lName: { type: String, lowercase: true },
-    image: [],
-    tags: [],
-    isRootBrand: { type: Boolean, default: false },
-    parentId: { type: mongoose.Types.ObjectId, ref: "brands" },
-    childIds: [], //brandIds
-    description: { type: String },
-    lDescription: { type: String, lowercase: true },
-    isActive: { type: Boolean, default: true },
-    level: Number,
-    updated: { type: Number },
-    created: { type: Number },
-    date: { type: Date },
+    name: { type: String, es_indexed: true }, // Will be indexed in ES
+    _name: { type: String, lowercase: true, es_indexed: false }, // NOT indexed in ES
+    lName: { type: String, lowercase: true, es_indexed: true },
+    image: { type: Array, es_indexed: false }, // skip indexing large/unnecessary fields
+    tags: { type: Array, es_indexed: true },
+    isRootBrand: { type: Boolean, default: false, es_indexed: true },
+    parentId: {
+        type: mongoose.Types.ObjectId,
+        ref: "brands",
+        es_indexed: false,
+    },
+    childIds: { type: Array, es_indexed: false },
+    description: { type: String, es_indexed: true },
+    lDescription: { type: String, lowercase: true, es_indexed: false },
+    isActive: { type: Boolean, default: true, es_indexed: true },
+    level: { type: Number, es_indexed: true },
+    updated: { type: Number, es_indexed: false },
+    created: { type: Number, es_indexed: false },
+    date: { type: Date, es_indexed: true },
 });
 
 brandSchema.plugin(AutoIncrement, { inc_field: "id", id: "brandId" });
 
 // Mongoosastic plugin
-// brandSchema.plugin(mongoosastic, {
-//     index: config.elasticSearch.index.brands,
-//     hosts: config.elasticSearch.hosts,
-// });
+brandSchema.plugin(mongoosastic, {
+    index: config.elasticSearch.index.brands,
+    hosts: config.elasticSearch.hosts,
+});
 
 // // Create the model
 const Brand = mongoose.model("Brand", brandSchema);

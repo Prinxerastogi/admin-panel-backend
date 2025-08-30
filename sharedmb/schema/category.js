@@ -90,21 +90,21 @@ const Category = mongoose.model("Category", categorySchema);
 //     }
 // );
 // Synchronize the model with Elasticsearch
-const stream = Category.synchronize();
-let count = 0;
+// const stream = Category.synchronize();
+// let count = 0;
 
-stream.on("data", (err, doc) => {
-    if (err) console.error(err);
-    count++;
-});
+// stream.on("data", (err, doc) => {
+//     if (err) console.error(err);
+//     count++;
+// });
 
-stream.on("close", () => {
-    console.log(`Indexed ${count} categories!`);
-});
+// stream.on("close", () => {
+//     console.log(`Indexed ${count} categories!`);
+// });
 
-stream.on("error", (err) => {
-    console.error(err);
-});
+// stream.on("error", (err) => {
+//     console.error(err);
+// });
 
 // Create indexes
 categorySchema.index({ _id: -1, id: -1 });
