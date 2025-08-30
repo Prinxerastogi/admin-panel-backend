@@ -76,7 +76,12 @@ let calculateRefundAmount = (req, res, next) => {
 
 let checkRefundAmountFromOrderAmount = (req, res, next) => {
     console.log("Total refundal amount calculated", req.data.totalRefundAmount);
-    if (req.data.totalRefundAmount > req.data.order.amount) {
+    const codAmount = req.data.order.paymentSource?.cod;
+    const onlineAmount = req.data.order.paymentSource?.easeBuzz || 0;
+    const walletAmount = req.data.order.paymentSource.wallet || 0;
+    const refundableAmount =
+        (codAmount < 0 ? 0 : codAmount) + onlineAmount + walletAmount;
+    if (req.data.totalRefundAmount > refundableAmount) {
         return res.status(201).json({
             success: false,
             message: "you cannot refund more than the order amount",
