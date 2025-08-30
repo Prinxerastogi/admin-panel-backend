@@ -56,13 +56,13 @@ let productSchema = new Schema({
     
     },
     seo: {
-        metaTitle: { type: String, es_indexed: false },
+        metaTitle: { type: String, es_indexed: true },
         metaKeywords: { type: String, es_indexed: true },
-        metaDescription: { type: String, es_indexed: false },
+        metaDescription: { type: String, es_indexed: true },
         canonical: String,
     },
     urlKey: { type: String, lowercase: true },
-    images: [{ type: String, es_indexed: false }],
+    images: [{ type: String, es_indexed: true }],
     tags: [],
     assets: {
         images: [
@@ -87,7 +87,8 @@ let productSchema = new Schema({
     brand: {
         id: { type: Schema.Types.ObjectId },
         image: [String],
-        name: { type: String, lowercase: true, es_indexed: true },
+        name: { type: String, lowercase: true },
+        
     }, //grocery
     subBrand: {
         id: { type: Schema.Types.ObjectId },
