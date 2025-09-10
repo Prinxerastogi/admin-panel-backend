@@ -242,6 +242,7 @@ productSchema.plugin(AutoIncrement, {
 productSchema.plugin(mongoosastic, {
     index: config.elasticSearch.index.products,
     hosts: config.elasticSearch.hosts,
+    saveOnSynchronize: false
 });
 // for elastic Search synchronizion
 let model = mongoose.model("product", productSchema);
@@ -257,17 +258,17 @@ model.createMapping({}, (err, mapping) => {
     }
 });
 
-// let stream = model.synchronize();
-// let count = 0;
-// stream.on("data", function (err, doc) {
-//     count++;
-// });
-// stream.on("close", function () {
-//     console.log("indexed " + count + " documents!");
-// });
-// stream.on("error", function (err) {
-//     console.log(err);
-// });
+let stream = model.synchronize();
+let count = 0;
+stream.on("data", function (err, doc) {
+    count++;
+});
+stream.on("close", function () {
+    console.log("indexed " + count + " documents!");
+});
+stream.on("error", function (err) {
+    console.log(err);
+});
 
 
 productSchema.index({ tags: 1 });

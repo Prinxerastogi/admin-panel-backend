@@ -99,20 +99,11 @@ module.exports.insertOne = function (data, Option, schema, callback) {
     });
 };
 
-module.exports.findOneAndUpdate = function (
-    condition,
-    update,
-    options,
-    schema,
-    callBack
-) {
-    schema.findOneAndUpdate(condition, update, options, function (error, data) {
-        if (error) {
-            callBack(error, null);
-        } else {
-            callBack(null, data);
-        }
-    });
+module.exports.findOneAndUpdate = function (condition, update, options, schema, callBack) {
+    const promise = schema.findOneAndUpdate(condition, update, options).exec();
+    promise
+        .then((data) => callBack(null, data))
+        .catch((error) => callBack(error, null));
 };
 
 module.exports.findOne = function (condition, schema, callBack) {

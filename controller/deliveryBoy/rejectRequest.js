@@ -4,7 +4,7 @@ const { Types } = require("mongoose");
 const rejectReq = async (req, res, next) => {
     try {
         const update = await withdrawalSchema.findOneAndUpdate(
-            { _id: Types.ObjectId(req.body._id) },
+            { _id: new Types.ObjectId(req.body._id) },
             { $set: { status: "failure", actionDate: new Date() } }
         );
         if (update) {
