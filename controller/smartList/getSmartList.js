@@ -17,7 +17,7 @@ let getSmartList = (req, res, next) => {
                 error: err,
             });
         } else if (response) {
-            productSchema.find({ smartList: response._id }, (err, products) => {
+            crudModel.find({ smartList: response._id }, productSchema,(err, products) => {
                 if (err) {
                     return res.status(400).json({
                         error: true,

@@ -67,7 +67,7 @@ const calculateAttendance = async (id, startDate, endDate) => {
         const result = await deliveryBoyLogsSchema.aggregate([
             {
                 $match: {
-                    deliveryPartnerId: Types.ObjectId(id),
+                    deliveryPartnerId: new Types.ObjectId(id),
                     createdAt: {
                         $gte: startDate,
                         $lte: endDate,

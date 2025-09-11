@@ -242,7 +242,10 @@ productSchema.plugin(AutoIncrement, {
 productSchema.plugin(mongoosastic, {
     index: config.elasticSearch.index.products,
     hosts: config.elasticSearch.hosts,
-    saveOnSynchronize: false
+    saveOnSynchronize: false,
+    clientOptions: {
+        nodes: config.elasticSearch.hosts,
+    },
 });
 // for elastic Search synchronizion
 let model = mongoose.model("product", productSchema);

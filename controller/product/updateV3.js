@@ -3,10 +3,11 @@ let sellerSchema = require("../../sharedmb/schema/sellerProduct");
 let validate = require("express-validation");
 let validation = require("./validation");
 let panelTrack = require("../../sharedmb/schema/panelTack");
+const crudModel = require("../../sharedmb/models/crud");
 let updateProduct = (req, res) => {
     let product = req.body.product;
     
-    productSchema.findOne({_id: req.body.productId}, (err, oldProduct) => {
+    crudModel.findOne({_id: req.body.productId},  productSchema,(err, oldProduct) => {
         if (err) {
             console.log("Error fetching old product data:", err);
         }
@@ -31,7 +32,7 @@ let updateProduct = (req, res) => {
             $set: updateProductDetails,
         };
         
-        productSchema.findOneAndUpdate(condition, update, (err, updated) => {
+       crudModel.findOneAndUpdate(condition, update, productSchema, (err, updated) => {
             if (err) {
                 return res.status(400).json({
                     error: true,
