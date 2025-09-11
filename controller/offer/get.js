@@ -1,11 +1,12 @@
 "use strict";
 let offerSchema = require("../../sharedmb/schema/offer");
+const crudModel = require("../../sharedmb/models/crud");
 
 let findOffer = (req, res) => {
     let condition = {
         _id: req.params.offerId,
     };
-    offerSchema.findOne(condition, (err, response) => {
+    crudModel.findOne(condition, offerSchema, (err, response) => {
         if (err) {
             return res.status(400).json({
                 error: true,

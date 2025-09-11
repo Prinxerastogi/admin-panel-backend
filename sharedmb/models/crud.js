@@ -71,7 +71,13 @@ module.exports.findById = async function (id, schema, callBack) {
  * @param {function(Error, object): void} [callBack] - Optional callback function.
  * @returns {Promise<object>}
  */
-module.exports.findByIdAndUpdate = async function (id, data, options, schema, callBack) {
+module.exports.findByIdAndUpdate = async function (
+    id,
+    data,
+    options,
+    schema,
+    callBack
+) {
     try {
         const result = await schema.findByIdAndUpdate(id, data, options);
         if (callBack) callBack(null, result);
@@ -109,7 +115,13 @@ module.exports.findByIdAndRemove = async function (id, schema, callBack) {
  * @param {function(Error, object): void} [callBack] - Optional callback function.
  * @returns {Promise<object>}
  */
-module.exports.update = async function (condition, data, options, schema, callBack) {
+module.exports.update = async function (
+    condition,
+    data,
+    options,
+    schema,
+    callBack
+) {
     try {
         const result = await schema.update(condition, data, options);
         if (callBack) callBack(null, result);
@@ -166,9 +178,17 @@ module.exports.insertMany = async function (data, options, schema, callBack) {
  * @param {function(Error, object): void} [callBack] - Optional callback function.
  * @returns {Promise<object>}
  */
-module.exports.findOneAndUpdate = async function (condition, update, options, schema, callBack) {
+module.exports.findOneAndUpdate = async function (
+    condition,
+    update,
+    options,
+    schema,
+    callBack
+) {
     try {
-        const result = await schema.findOneAndUpdate(condition, update, options).exec();
+        const result = await schema
+            .findOneAndUpdate(condition, update, options)
+            .exec();
         if (callBack) callBack(null, result);
         return result;
     } catch (error) {
@@ -202,7 +222,11 @@ module.exports.findOne = async function (condition, schema, callBack) {
  * @param {function(Error, object): void} [callBack] - Optional callback function.
  * @returns {Promise<object>}
  */
-module.exports.findOneAndRemove = async function (conditions, schema, callBack) {
+module.exports.findOneAndRemove = async function (
+    conditions,
+    schema,
+    callBack
+) {
     try {
         const result = await schema.findOneAndRemove(conditions);
         if (callBack) callBack(null, result);
@@ -222,7 +246,13 @@ module.exports.findOneAndRemove = async function (conditions, schema, callBack) 
  * @param {function(Error, object): void} [callBack] - Optional callback function.
  * @returns {Promise<object>}
  */
-module.exports.updateOne = async function (condition, data, options, schema, callBack) {
+module.exports.updateOne = async function (
+    condition,
+    data,
+    options,
+    schema,
+    callBack
+) {
     try {
         const result = await schema.updateOne(condition, data, options).exec();
         if (callBack) callBack(null, result);
@@ -242,7 +272,13 @@ module.exports.updateOne = async function (condition, data, options, schema, cal
  * @param {function(Error, Array<object>): void} [callBack] - Optional callback function.
  * @returns {Promise<Array<object>>}
  */
-module.exports.findProjectionOptionAndSort = async function (condition, projection, options, schema, callBack) {
+module.exports.findProjectionOptionAndSort = async function (
+    condition,
+    projection,
+    options,
+    schema,
+    callBack
+) {
     try {
         const result = await schema.find(condition, projection, options);
         if (callBack) callBack(null, result);
@@ -262,7 +298,13 @@ module.exports.findProjectionOptionAndSort = async function (condition, projecti
  * @param {function(Error, object): void} [callBack] - Optional callback function.
  * @returns {Promise<object>}
  */
-module.exports.findOneProjectionOptionAndSort = async function (condition, projection, options, schema, callBack) {
+module.exports.findOneProjectionOptionAndSort = async function (
+    condition,
+    projection,
+    options,
+    schema,
+    callBack
+) {
     try {
         const result = await schema.findOne(condition, projection, options);
         if (callBack) callBack(null, result);
@@ -291,7 +333,13 @@ module.exports.validId = function (id) {
  * @param {function(Error, object): void} [callBack] - Optional callback function.
  * @returns {Promise<object>}
  */
-module.exports.updateMany = async function (condition, data, options, schema, callBack) {
+module.exports.updateMany = async function (
+    condition,
+    data,
+    options,
+    schema,
+    callBack
+) {
     try {
         const result = await schema.updateMany(condition, data, options);
         if (callBack) callBack(null, result);
@@ -310,9 +358,32 @@ module.exports.updateMany = async function (condition, data, options, schema, ca
  * @param {function(Error, object): void} [callBack] - Optional callback function.
  * @returns {Promise<object>}
  */
-module.exports.createWthOption = async function (data, options, schema, callBack) {
+module.exports.createWthOption = async function (
+    data,
+    options,
+    schema,
+    callBack
+) {
     try {
         const result = await schema.create(data, options);
+        if (callBack) callBack(null, result);
+        return result;
+    } catch (error) {
+        if (callBack) callBack(error, null);
+        throw error;
+    }
+};
+
+/**
+ * Deletes a single document that matches the condition.
+ * @param {object} condition - The query conditions.
+ * @param {mongoose.Model} schema - The Mongoose model.
+ * @param {function(Error, object): void} [callBack] - Optional callback function.
+ * @returns {Promise<object>}
+ */
+module.exports.deleteOne = async function (condition, schema, callBack) {
+    try {
+        const result = await schema.deleteOne(condition).exec();
         if (callBack) callBack(null, result);
         return result;
     } catch (error) {

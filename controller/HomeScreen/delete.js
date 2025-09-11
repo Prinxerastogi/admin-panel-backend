@@ -19,7 +19,7 @@ const updateMongo = async (req, res) => {
         HomeScreenCard,
         (err, result) => {
             if (err) {
-                return res.status(400).json({ message: error.message });
+                return res.status(400).json({ message: err.message });
             } else if (!result) {
                 return res
                     .status(404)

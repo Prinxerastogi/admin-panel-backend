@@ -1,13 +1,14 @@
 let issueSchema = require("../../sharedmb/schema/reportIssue");
 let orderSchema = require("../../sharedmb/schema/order");
 let utility = require("../../sharedmb/utility/utility");
+const crudModel = require("../../sharedmb/models/crud");
 
 let checkOrder = (req, res, next) => {
     if (req.body.orderId) {
         let condition = {
             _id: req.body.orderId,
         };
-        orderSchema.findOne(condition, (err, response) => {
+        crudModel.findOne(condition, orderSchema, (err, response) => {
             if (err) {
                 return res.status(400).json({
                     error: err,

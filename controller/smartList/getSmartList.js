@@ -2,13 +2,14 @@
 let smartListSchema = require("../../sharedmb/schema/smartList"),
     productSchema = require("../../sharedmb/schema/product"),
     mongoose = require("mongoose");
+const crudModel = require("../../sharedmb/models/crud");
 
 let getSmartList = (req, res, next) => {
     let conditions = {
         _id: req.params.smartlist_id,
     };
 
-    smartListSchema.findOne(conditions, (err, response) => {
+    crudModel.findOne(conditions, smartListSchema, (err, response) => {
         if (err) {
             return res.status(400).json({
                 error: true,
@@ -20,7 +21,8 @@ let getSmartList = (req, res, next) => {
                 if (err) {
                     return res.status(400).json({
                         error: true,
-                        message: "Error occurred while fetching associated products",
+                        message:
+                            "Error occurred while fetching associated products",
                         error: err,
                     });
                 } else {
@@ -40,7 +42,9 @@ let getSmartList = (req, res, next) => {
                 }
             });
         } else {
-            return res.status(404).json({ success: false, message: "Smart List not found" });
+            return res
+                .status(404)
+                .json({ success: false, message: "Smart List not found" });
         }
     });
 };

@@ -10,7 +10,7 @@ let deleteSmartList = (req, res, next) => {
 
     console.log(conditions);
 
-    smartListSchema.deleteOne(conditions, (err, response) => {
+    crudModel.deleteOne(conditions, smartListSchema, (err, response) => {
         if (err) {
             return res.status(400).json({
                 error: true,

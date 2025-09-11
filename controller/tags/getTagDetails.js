@@ -10,7 +10,7 @@ let findTag = (req, res, next) => {
     let conditions = {
         _id: req.params.tag_id,
     };
-    tagsSchema.findOne(conditions, (err, response) => {
+    crudModel.findOne(conditions, tagsSchema, (err, response) => {
         if (err) {
             return res.status(400).json({
                 error: true,
