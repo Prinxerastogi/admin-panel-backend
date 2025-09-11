@@ -171,7 +171,7 @@ let findProductDetails = (req, res, next) => {
   let condition = {
     _id: req.body.productId,
   };
-  productSchema.findOne(condition, (err, response) => {
+  crudModel.findOne(condition,productSchema,(err, response) => {
     if (err) {
       return res.status(400).json({
         error: true,
