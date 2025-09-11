@@ -18,7 +18,7 @@ const getRequestInfo = async (req, res, next) => {
         const request = await withdrawalSchema.aggregate([
             {
                 $match: {
-                    _id: Types.ObjectId(_id),
+                    _id: new Types.ObjectId(_id),
                     status: "pending",
                 },
             },
@@ -71,13 +71,13 @@ const getRequestInfo = async (req, res, next) => {
             req.data.request.amount = request[0].currentBalance;
         }
         const update = await withdrawalSchema.findOneAndUpdate(
-            { _id: Types.ObjectId(req.body._id) },
+            { _id: new Types.ObjectId(req.body._id) },
             { $set: { amount: req.data.request.amount } }
         );
 
         const result = await deliveryBoySchema.findOneAndUpdate(
             {
-                _id: Types.ObjectId(request[0].deliveryPartnerId),
+                _id: new Types.ObjectId(request[0].deliveryPartnerId),
                 currentBalance: { $gte: req.data.request.amount },
             },
             {
@@ -132,7 +132,7 @@ const initiateTransfer = async (req, res, next) => {
         if (data.success) {
             res.json({ success: true, message: "Request Approved" });
             const update = await withdrawalSchema.findOneAndUpdate(
-                { _id: Types.ObjectId(req.body._id) },
+                { _id: new Types.ObjectId(req.body._id) },
                 {
                     $set: {
                         status: "success",
@@ -158,7 +158,7 @@ const initiateTransfer = async (req, res, next) => {
         } else {
             const result = await deliveryBoySchema.findOneAndUpdate(
                 {
-                    _id: Types.ObjectId(req.data.request.deliveryPartnerId),
+                    _id: new Types.ObjectId(req.data.request.deliveryPartnerId),
                 },
                 {
                     $inc: { currentBalance: req.data.request.amount },
