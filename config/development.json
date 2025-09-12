@@ -90,11 +90,13 @@
     "previousDay": 30,
     "elasticSearch": {
         "index": {
-            "products": "products1",
+            "products": "products",
             "categorys": "category",
             "brands": "brands"
         },
-        "hosts": ["103.133.214.81:9221"]
+        "hosts": [
+            "http://127.0.0.1:9221"
+        ]
     },
     "awsConfig": {
         "accessKeyId": "",

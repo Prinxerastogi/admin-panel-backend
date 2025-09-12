@@ -18,7 +18,7 @@ let findTag = (req, res, next) => {
                 error: err,
             });
         } else if (response) {
-            productSchema.find({ tags: response._id }, (err, product) => {
+            crudModel.find({ tags: response._id }, productSchema, (err, product) => {
                 if (err) {
                     return res.status(400).json({
                         error: true,

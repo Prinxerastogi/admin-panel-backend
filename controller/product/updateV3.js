@@ -32,7 +32,7 @@ let updateProduct = (req, res) => {
             $set: updateProductDetails,
         };
         
-       crudModel.findOneAndUpdate(condition, update, productSchema, (err, updated) => {
+       crudModel.findOneAndUpdate(condition, update, {}, productSchema, (err, updated) => {
             if (err) {
                 return res.status(400).json({
                     error: true,

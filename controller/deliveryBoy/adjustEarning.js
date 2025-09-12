@@ -87,7 +87,7 @@ const createEarningTransaction = async (req, res, next) => {
 const updateRanking = async (req, res, next) => {
     try {
         const result = await deliveryBoySchema.findOneAndUpdate(
-            { _id: Types.ObjectId(req.data.deliveryPartnerId) },
+            { _id: new Types.ObjectId(req.data.deliveryPartnerId) },
             { $inc: { currentBalance: req.data.earning } },
             { new: true }
         );
