@@ -4,6 +4,11 @@ let AutoIncrement = require("mongoose-sequence")(mongoose);
 let mongoosastic = require("mongoosastic");
 let config = require("config");
 
+mongoose.connect(config.database, {
+    socketTimeoutMS: 0,
+    // keepAlive: true,
+    // reconnectTries: 30
+});
 let productSchema = new Schema({
     id: { type: Number, es_indexed: true },
     name: {
@@ -250,28 +255,30 @@ productSchema.plugin(mongoosastic, {
 // for elastic Search synchronizion
 let model = mongoose.model("product", productSchema);
 
-// model.createMapping({}, (err, mapping) => {
-//     if (err) {
-//         console.log(
-//             "Error creating mapping (you can safely ignore this):",
-//             err
-//         );
-//     } else {
-//         console.log("Mapping created:", mapping.toString());
-//     }
-// });
+model.createMapping({}, (err, mapping) => {
+    if (err) {
+        console.log(
+            "Error creating mapping (you can safely ignore this):",
+            err
+        );
+    } else {
+        console.log("Mapping created:", mapping.toString());
+    }
+});
 
-// let stream = model.synchronize();
-// let count = 0;
-// stream.on("data", function (err, doc) {
-//     count++;
-// });
-// stream.on("close", function () {
-//     console.log("indexed " + count + " documents!");
-// });
-// stream.on("error", function (err) {
-//     console.log(err);
-// });
+let stream = model.synchronize();
+let count = 0;
+stream.on("data", function (err, doc) {
+    process.stdout.write("streamed " + doc.name)
+
+    count++;
+});
+stream.on("close", function () {
+    console.log("indexed " + count + " documents!");
+});
+stream.on("error", function (err) {
+    console.log(err);
+});
 
 
 productSchema.index({ tags: 1 });

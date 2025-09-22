@@ -188,7 +188,6 @@ module.exports.findOneAndUpdate = async function (
     try {
         const result = await schema
             .findOneAndUpdate(condition, update, options)
-            .exec();
         if (callBack) callBack(null, result);
         return result;
     } catch (error) {

@@ -112,12 +112,12 @@ const processRefund = async (req, res, next) => {
     if (refund.amountSplit.wallet > 0) {
       successlog.info(
         "processing wallet refund" +
-          refund.amountSplit.wallet +
-          " " +
-          refund._id
+        refund.amountSplit.wallet +
+        " " +
+        refund._id
       );
       walletResponse = await processWalletRefund(
-        refund.amountSplit.wallet,
+        parseFloat(refund.amountSplit.wallet.toFixed(2)),
         req.data.order,
         refund._id
       );
@@ -125,12 +125,12 @@ const processRefund = async (req, res, next) => {
     if (refund.amountSplit.online > 0) {
       successlog.info(
         "processing online refund" +
-          refund.amountSplit.online +
-          " " +
-          refund._id
+        refund.amountSplit.online +
+        " " +
+        refund._id
       );
       onlineRefund = await processEasebuzzRefund(
-        refund.amountSplit.online,
+        parseFloat(refund.amountSplit.online.toFixed(2)),
         req.data.order,
         refund._id
       );

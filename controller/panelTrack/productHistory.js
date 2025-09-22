@@ -14,7 +14,8 @@ const productHistory = async (req, res) => {
       });
     }
 
-    if (!new mongoose.Types.ObjectId.isValid(productId)) {
+    
+    if (!mongoose.isValidObjectId(productId)) {
       return res.status(400).json({
         success: false,
         message: "Invalid Product ID format",

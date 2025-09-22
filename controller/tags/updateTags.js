@@ -28,7 +28,7 @@ const validateTagId = (req, res, next) => {
     });
   }
 };
-
+ 
 let findTag = (req, res, next) => {
   const conditions = {
     _id: req.body.tag_id,
@@ -64,7 +64,7 @@ let updatetags = (req, res) => {
     updateDate: new Date(),
   };
 
-  tagsSchema.findOneAndUpdate(condition, update, (error, updated) => {
+  crudModel.findOneAndUpdate(condition, update,{}, tagsSchema,(error, updated) => {
     if (error) {
       return res.status(400).json({
         error: true,
@@ -75,10 +75,12 @@ let updatetags = (req, res) => {
     }
 
     if (sanitizedProducts.length > 0) {
-      productSchema.updateMany(
+     crudModel.updateMany(
         { tags: tagId },
         { $pull: { tags: tagId } },
-        (removeError, removeResult) => {
+        {},
+        productSchema,
+        async (removeError, removeResult) => {
           if (removeError) {
             return res.status(400).json({
               error: true,
@@ -94,21 +96,22 @@ let updatetags = (req, res) => {
             },
           }));
 
-          productSchema.bulkWrite(bulkOps, (bulkError, bulkResult) => {
-            if (bulkError) {
-              return res.status(400).json({
-                error: true,
-                success: false,
-                message: MESSAGE.add.savedataError,
-                error: bulkError,
-              });
-            }
+          try {
+            const bulkResult = await productSchema.bulkWrite(bulkOps);
+
             return res.status(200).json({
               success: true,
               message: MESSAGE.add.update,
               updatedProducts: bulkResult.modifiedCount,
             });
-          });
+          } catch (bulkError) {
+            return res.status(400).json({
+              error: true,
+              success: false,
+              message: MESSAGE.add.savedataError,
+              error: bulkError,
+            });
+          }
         }
       );
     } else {
