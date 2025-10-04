@@ -47,6 +47,7 @@ let offerType = (req, res, next) => {
             recieverAmount: Number(req.body.refralSenderAmount),
         };
         req.body.isActive = true;
+        req.body.isAffiliate = true; 
         next();
     } else {
         next();

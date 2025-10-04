@@ -39,6 +39,7 @@ let offerSchema = new Schema({
         recieverAmount: Number,
     },
     offerType: String, //refral,affliate,offer,
+    isAffiliate: { type: Boolean, default: false }, 
     userId: { type: Schema.Types.ObjectId, ref: "user" },
     isRestricted: { type: Boolean, default: false },
 });
