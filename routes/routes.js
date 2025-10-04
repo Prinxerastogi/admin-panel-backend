@@ -503,6 +503,14 @@ apiRoutes.post("/campaign/test", controller.campaigns.testCampaign);
 // apiRoutes.put("/updateFeatureWall/:id", controller.HomeScreen.update);
 // apiRoutes.get("/featureWall/:id", controller.HomeScreen.getFeatureWall);
 
+//product rating and review
+apiRoutes.get("/latest-reviews", controller.productRating.getRatingReview);
+apiRoutes.put("/approve/:reviewId", controller.productRating.approve);
+apiRoutes.put(
+    "/decline/:reviewId",
+    controller.productRating.decline)
+
+
 // Product Group Routes
 apiRoutes.post("/product-groups", controller.productGroup.create);
 apiRoutes.get("/product-groups", controller.productGroup.list);
