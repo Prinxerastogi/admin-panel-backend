@@ -58,7 +58,7 @@ let createSubBarnd = async (req, res, next) => {
       date: new Date(),
     };
 
-    let response = await Brand.create(data);
+    let response = await brandSchema.create(data);
 
     req.data = {
       childBarndsId: response._id,
@@ -121,8 +121,8 @@ let copybrandImage = (req, res, next) => {
 
 let findParentBarndAndUpdateChilds = (req, res) => {
   let condition = {
-      _id: req.body.parentBrandId,
-    },
+    _id: req.body.parentBrandId,
+  },
     update = {
       $push: {
         childIds: req.data.childBarndsId,
