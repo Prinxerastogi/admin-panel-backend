@@ -14,11 +14,7 @@ const { default: axios } = require("axios");
 
 app.use(cors());
 mongoose.connect(config.database, {
-    useNewUrlParser: true,
-    useUnifiedTopology: true,
     socketTimeoutMS: 0,
-    // keepAlive: true,
-    // reconnectTries: 30
 });
 console.log("MongoDb Connection: ", config.database);
 
@@ -121,7 +117,7 @@ app.use(
 );
 app.use(
     "/api/admin/public/customImages",
-    express.static(config.upload.customImages)
+        express.static(config.upload.customImages)
 );
 app.use("/api/admin/public/city", express.static(config.upload.cityImagePath));
 app.use("/api/admin/public/blog", express.static(config.upload.blogImagePath));
