@@ -31,10 +31,10 @@ let validateHsnCode = async (req, res, next) => {
 
     const hsnCode = req.body.product.hsnCode.toString();
     const productId = req.body.productId;
-    if (!/^10\d{6}$/.test(hsnCode)) {
+    if (!/^10\d{6}$/.test(hsnCode) &&  !/^50\d{6}$/.test(hsnCode)) {
         return res.json({
             success: false,
-            message: "HSN code must be 8 digits starting with '10'",
+            message: "HSN code must be 8 digits starting with '10' or '50'",
         });
     }
     try {

@@ -28,7 +28,7 @@ const validateTagId = (req, res, next) => {
     });
   }
 };
- 
+
 let findTag = (req, res, next) => {
   const conditions = {
     _id: req.body.tag_id,
@@ -64,7 +64,7 @@ let updatetags = (req, res) => {
     updateDate: new Date(),
   };
 
-  crudModel.findOneAndUpdate(condition, update,{}, tagsSchema,(error, updated) => {
+  crudModel.findOneAndUpdate(condition, update, {}, tagsSchema, (error, updated) => {
     if (error) {
       return res.status(400).json({
         error: true,
@@ -75,7 +75,7 @@ let updatetags = (req, res) => {
     }
 
     if (sanitizedProducts.length > 0) {
-     crudModel.updateMany(
+      crudModel.updateMany(
         { tags: tagId },
         { $pull: { tags: tagId } },
         {},

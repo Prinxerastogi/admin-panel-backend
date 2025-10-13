@@ -56,7 +56,7 @@ const createTransaction = async (req, res, next) => {
             });
         }
         const user = await userSchema.findOneAndUpdate(
-            { _id: Types.ObjectId(req.data.userId) },
+            { _id: req.data.userId },
             { $inc: { walletBalance: req.body.amount } },
             { new: true, projection: { walletBalance: 1 } }
         );
