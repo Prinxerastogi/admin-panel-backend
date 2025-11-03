@@ -10,6 +10,7 @@ require("dotenv").config();
 const GOOGLE_MAPS_API_KEY = "AIzaSyC-smWaXJTSXppHww8X_k5_VYZnWDD6QSs";
 let Schema = mongoose.Schema;
 const { default: axios } = require("axios");
+const path = require("path");
 // const setUpCronJobs = require("./library/whatsappCampaign");
 
 app.use(cors());
@@ -117,7 +118,7 @@ app.use(
 );
 app.use(
     "/api/admin/public/customImages",
-        express.static(config.upload.customImages)
+    express.static(config.upload.customImages)
 );
 app.use("/api/admin/public/city", express.static(config.upload.cityImagePath));
 app.use("/api/admin/public/blog", express.static(config.upload.blogImagePath));
@@ -128,6 +129,20 @@ app.use(
 );
 app.use("/api/admin/public/info", express.static(config.upload.infoImagePath));
 app.use("/api/admin/public/temp", express.static(config.upload.tempPath));
+app.use("/api/admin/public/brochure", (req, res, next) => {
+    console.log(
+        `[BROCHURE DEBUG] Request hit static middleware for: ${req.originalUrl}`
+    );
+    next(); // IMPORTANT: Pass control to the next middleware (express.static)
+});
+app.use(
+    "/api/admin/public/brochure",
+    express.static(path.join(__dirname, "public", "brochure"))
+);
+app.use(
+    "/api/admin/public/brochure/generated",
+    express.static(path.join(__dirname, "public", "brochure", "generated"))
+);
 
 // app.use(bodyParser.urlencoded({ extended: false }));
 app.use(express.json({ limit: "100mb" }));

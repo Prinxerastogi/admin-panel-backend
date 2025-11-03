@@ -1,0 +1,54 @@
+{
+  "basePdf": "/api/admin/public/brochure/template.pdf",
+  "fontFile": "/fonts/Montserrat-BlackItalic.ttf",
+  "fields": [
+    {
+      "name": "shopName",
+      "label": "name",
+      "page": 1,
+      "color": [
+        0,
+        0,
+        0
+      ],
+      "maxFontSize": 40,
+      "box": {
+        "left": 344,
+        "right": 640,
+        "y": 1432
+      }
+    },
+    {
+      "name": "phonePage1",
+      "label": "Phone Number (Page 1)",
+      "page": 1,
+      "color": [
+        0,
+        0,
+        0
+      ],
+      "maxFontSize": 40,
+      "box": {
+        "left": 451,
+        "right": 584,
+        "y": 760
+      }
+    },
+    {
+      "name": "phonePage2",
+      "label": "Phone Number (Page 2)",
+      "page": 2,
+      "color": [
+        0,
+        0,
+        0
+      ],
+      "maxFontSize": 35,
+      "box": {
+        "left": 451,
+        "right": 584,
+        "y": 621
+      }
+    }
+  ]
+}

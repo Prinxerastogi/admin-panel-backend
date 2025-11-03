@@ -18,6 +18,14 @@ apiRoutes.get("/", (req, res) => {
         message: "Welcome to the Admin Api",
     });
 });
+apiRoutes.get("/brochure/load-fields", controller.brochure.loadFields);
+apiRoutes.post("/brochure/save-fields", controller.brochure.saveFields);
+apiRoutes.post("/brochure/send-whatsapp", controller.brochure.sendBulkWhatsApp);
+apiRoutes.post(
+    "/brochure/upload-pdf",
+    controller.brochure.upload.single("templateFile"),
+    controller.brochure.uploadPdf
+);
 apiRoutes.post("/growassan/webhook/:type", controller.growassan.webhook);
 apiRoutes.get("/home", controller.home); ////not in use
 apiRoutes.get("/bulkWrite", async (req, res) => {
@@ -506,10 +514,7 @@ apiRoutes.post("/campaign/test", controller.campaigns.testCampaign);
 //product rating and review
 apiRoutes.get("/latest-reviews", controller.productRating.getRatingReview);
 apiRoutes.put("/approve/:reviewId", controller.productRating.approve);
-apiRoutes.put(
-    "/decline/:reviewId",
-    controller.productRating.decline)
-
+apiRoutes.put("/decline/:reviewId", controller.productRating.decline);
 
 // Product Group Routes
 apiRoutes.post("/product-groups", controller.productGroup.create);
