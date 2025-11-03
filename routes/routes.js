@@ -27,7 +27,7 @@ apiRoutes.post(
     controller.brochure.uploadPdf
 );
 apiRoutes.post("/growassan/webhook/:type", controller.growassan.webhook);
-apiRoutes.get("/home", controller.home); ////not in use
+apiRoutes.get("/home", controller.home);
 apiRoutes.get("/bulkWrite", async (req, res) => {
     try {
         if (!Array.isArray(groupArray)) {
