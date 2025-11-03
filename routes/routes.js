@@ -19,7 +19,7 @@ apiRoutes.get("/", (req, res) => {
     });
 });
 apiRoutes.post("/growassan/webhook/:type", controller.growassan.webhook);
-apiRoutes.get("/home", controller.home); ////not in use
+apiRoutes.get("/home", controller.home);
 apiRoutes.get("/bulkWrite", async (req, res) => {
     try {
         if (!Array.isArray(groupArray)) {
@@ -506,10 +506,7 @@ apiRoutes.post("/campaign/test", controller.campaigns.testCampaign);
 //product rating and review
 apiRoutes.get("/latest-reviews", controller.productRating.getRatingReview);
 apiRoutes.put("/approve/:reviewId", controller.productRating.approve);
-apiRoutes.put(
-    "/decline/:reviewId",
-    controller.productRating.decline)
-
+apiRoutes.put("/decline/:reviewId", controller.productRating.decline);
 
 // Product Group Routes
 apiRoutes.post("/product-groups", controller.productGroup.create);
